@@ -22,6 +22,7 @@ function createWindow() {
    // resizable:false,
     webPreferences: {
         preload: __dirname + '/preload.js',
+        enableRemoteModule: true
         //nodeIntegration: false,
        // contextIsolation: false
     }

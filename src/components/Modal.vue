@@ -22,7 +22,6 @@
 <script>
     const fs = window.fs;
     const mm = require('music-metadata-browser');
-//const util = require('util');
     var source, animationId;
     export default {
         name: "Modal",
