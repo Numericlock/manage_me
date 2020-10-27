@@ -6,7 +6,7 @@
             </div>
             <div class="next-alarm">
                 <div class="text">
-                    <span>Next Alarm Time: </span><span>{{ next_time }}</span>
+                    <span>Next Alarm Time: </span><span>{{ next_alarm_time }}</span>
                 </div>
             </div>
         </div>
@@ -19,18 +19,6 @@
 </template>
 
 <script>
-    const app = window.app;
-    //const Datastore = window.Datastore;
-    var Datastore = require('nedb');
-    var path = require('path');
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        autoload: true
-    });    
-    const schedule_db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/schedule.db'),
-        autoload: true
-    });
     export default {
         props:{
           //time: String  
@@ -46,58 +34,19 @@
         computed: {
             message: function () {
                 return this.time.toLocaleString()
+            },
+            next_alarm_time: function () {
+                //return this.$store.getters.nextTime
+                console.log(this.$store.getters.nextTime);
+                return this.$store.getters.nextTime
             }
         },
         methods:{
             refresh: function () {
-                var dateNow =  new Date()
+                var dateNow =  new Date();
                 var dayOfWeekStr = [ "日", "月", "火", "水", "木", "金", "土" ][dateNow.getDay()] ;
                 this.time = ("0"+dateNow.getHours()).slice(-2)+":"+("0"+dateNow.getMinutes()).slice(-2)+":"+("0"+dateNow.getSeconds()).slice(-2)+"("+dayOfWeekStr+")";
                 setTimeout(() => { this.refresh() }, 1000);
-            },
-            nextAlarm: function (){
-                var dateNow =  new Date();
-                var day = dateNow.getDay();
-                var calcNum=Number(day+("0"+dateNow.getHours()).slice(-2)+("0"+dateNow.getMinutes()).slice(-2));
-                console.log(calcNum);
-                schedule_db.loadDatabase((error) => {
-                    if (error !== null)console.error(error);
-                    console.log("load database completed.");
-                });
-                schedule_db.find({"repeat":{$gt:0}}).sort({repeat: 1}).exec(function(err, docs) { 
-                    console.log(docs.length);
-                    console.log(docs);
-                    var next_result = null;
-                    for(let i=0;i<docs.length;i++){
-                        if(calcNum < docs[i].repeat){
-                            next_result = docs[i];
-                            break;
-                        }
-                    }
-                    if(next_result == null){
-                        for(let i=docs.length-1;i>=0;i--){
-                            if(calcNum > docs[i].repeat){
-                                next_result = docs[i];
-                                break;
-                            }
-                        }   
-                    }
-                    console.log(next_result);
-                   db.loadDatabase((error) => {
-                        if (error !== null)console.error(error);
-                        console.log("load database completed.");
-                    });
-                    db.findOne({"_id": next_result.id}, function(err, docs) {
-                       this.next_time = docs.hours+":"+docs.minutes;
-                        console.log(docs);
-                    }.bind(this));
-                }.bind(this)); 
-                console.log("refきたぞおおおおおお");
-            },
-            getDb(db,schedule_db){
-                this.db = db;
-                this.schedule_db = schedule_db;
-                this.nextAlarm();
             }
         },
         created: function () {

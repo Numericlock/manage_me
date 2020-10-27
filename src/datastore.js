@@ -1,16 +1,8 @@
 const app = window.app;
-const Datastore = window.Datastore;
+var Datastore = require('nedb');
+var path = require('path');
 console.log("しね");
-const db = new Datastore({ 
-    filename: app.getPath('userData')+'/data.db',
+export default new Datastore({
+    filename: path.join(app.getPath('userData'), '/alarm.db'),
     autoload: true
 });
-    import dbData from '../namelist.json';
-    db.insert(dbData);
-    db.insert(dbData, (error, newDoc) => {
-      if(error !== null){
-        console.error(error);
-      }
-      // newDocにはアルファベット16文字の値を持つ_idフィールドが追加される
-      console.log(newDoc);
-    });

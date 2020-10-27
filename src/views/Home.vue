@@ -66,7 +66,7 @@
         },
         created(){
             this.getData();
-            this.$emit('nextAlarm');
+            //this.$emit('nextAlarm');
         }
     }
 

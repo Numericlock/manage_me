@@ -104,9 +104,10 @@
             value: [],
             sound_value:null,
             options: ['毎日','月', '火', '水', '木', '金', '土', '日'],
-            sound_options: ['sasakure','reol','女王蜂'],
+            sound_options: [],
             newDoc:null,
             sound_data:[],
+            sound_ids:[],
             is_enable:true //alarmの初期値
           }
         },
@@ -128,15 +129,9 @@
                 }
             },
             test(){
-               // console.log(this.name);
-                console.log(this.time.HH);
-                console.log(this.time.mm);
-             //   console.log(this.sound_value);
                 var Vm = this;
-              //  console.log(this.value);
                 //db.remove({}, { multi: true });
                 //schedule_db.remove({}, { multi: true });
-                console.log(this.value);
                 if (this.name !=null && this.time!=null && this.value != [] && this.sound_value != null){
                     var repeat = this.value;
                     var repeat_value;
@@ -153,24 +148,35 @@
                             }
                         }
                     }
-                    var dbData =  {"name":this.name,"hours":this.time.HH,"minutes":this.time.mm,"sound_value":this.sound_value,"repeat":repeat_value,"isEnable":this.is_enable};
+                    var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value , 0)];
+                    var dbData =  {"name":this.name,"hours":this.time.HH,"minutes":this.time.mm,"sound_id":sound_id,"repeat":repeat_value,"isEnable":this.is_enable};
                     db.insert(dbData, function (err, newDoc) {
                         this.newDoc = newDoc;
                         console.log(this.newDoc);
                        // var schedule_data = {"id":newDoc._id,"repeat":null};
+                        var dateNow =  new Date()
                         var days = [ "日", "月", "火", "水", "木", "金", "土" ];
+                        var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
+                        var currentTime = String(dateNow.getDay())+("0"+dateNow.getHours()).slice(-2)+("0"+dateNow.getMinutes()).slice(-2);
                         for(var i=0;i<this.value.length;i++){
-                            console.log(days.indexOf(this.value[i])+this.time.HH+this.time.mm);
+                            var time = Number(days.indexOf(this.value[i])+this.time.HH+this.time.mm);
+                            if(currentTime < time && time < nextAlarm){
+                                nextAlarm = time;
+                            }else if(nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time){
+                                nextAlarm = time;
+                            }
                             schedule_db.insert({
                                 "id":newDoc._id,
-                                "repeat":Number(days.indexOf(this.value[i])+this.time.HH+this.time.mm)
+                                "repeat":time
                             }, function (err, newDoc) {
                                 console.log(newDoc);
                             });
                         }
-                        schedule_db.find({}, function(err, docs) { 
+                        var strNextAlarm= ('0000000000' + nextAlarm).slice(-5);
+                        Vm.$store.dispatch('next_alarm_refresh', {time: strNextAlarm});
+                        schedule_db.find({}, function(err, docs) {
                             console.log(docs);
-                           Vm.next();
+                         //  Vm.next();
                         }); 
                        // this.nextAlarm();
                     }.bind(this));
@@ -185,16 +191,16 @@
             },
             getSoundData(){
                 sound_db.find({}, function(err, docs) {
+                    docs.forEach((doc) => {
+                        this.sound_options.push(doc.name);
+                        this.sound_ids.push(doc._id);
+                    })
                     this.sound_data = docs;
                 }.bind(this)); 
             },
-            next: function(){
-                console.log("wwwwwwwwwwwおっぱいぱいぱいぱい！！！");
-                this.$emit('nextAlarm');
-            }
         },
-        created(){
-            
+        mounted: function(){
+            this.getSoundData();
         }
     }
 </script>

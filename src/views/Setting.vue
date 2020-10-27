@@ -173,7 +173,9 @@
                 analyser.fftSize = 128;
                 analyser.connect(audioContext.destination);
                 audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer){
-                    
+                    if(source) {
+                        this.source.stop();
+                    }
                     this.source = audioContext.createBufferSource();
                     this.source.buffer = buffer;
                     this.source.connect(analyser);
