@@ -47,7 +47,7 @@
        //  filename: '../data.db',
         autoload: true
     });
-    //import dbData from './namelist.json';
+/*     //import dbData from './namelist.json';
     var textdata = "ふざけるなやよ";
     fs.writeFileSync('./src/test.txt', textdata, "utf-8", (err) => {
       if(err) {
@@ -80,7 +80,7 @@
           source.connect(analyser);
          // source.start(0);
         });
-     // };
+     // }; */
     export default {
         name: 'Setting',
         data () {
@@ -173,7 +173,7 @@
                 analyser.fftSize = 128;
                 analyser.connect(audioContext.destination);
                 audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer){
-                    if(source) {
+                    if(this.source) {
                         this.source.stop();
                     }
                     this.source = audioContext.createBufferSource();
@@ -181,7 +181,6 @@
                     this.source.connect(analyser);
                     this.source.start(0);
                 }.bind(this));
-                this.source = source;
             },
             sound_stop:function(){
                // var source = this.source;
