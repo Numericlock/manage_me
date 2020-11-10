@@ -22,9 +22,9 @@ function createWindow() {
    // resizable:false,
     webPreferences: {
         preload: __dirname + '/preload.js',
-        enableRemoteModule: true
-        //nodeIntegration: false,
-       // contextIsolation: false
+        enableRemoteModule: true,
+        nodeIntegration: false,
+        contextIsolation: false
     }
   })
 
@@ -43,7 +43,6 @@ function createWindow() {
   })
   win.setMenu(menu);
 }
-
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
@@ -75,7 +74,6 @@ app.on('ready', async () => {
   }
   createWindow()
 })
-
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
   if (process.platform === 'win32') {

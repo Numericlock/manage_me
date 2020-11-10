@@ -2,7 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Setting from '../views/Setting.vue'
-import AleamAdd from '../views/AleamAdd.vue'
+import AlarmAdd from '../views/AlarmAdd.vue'
+import AlarmDetail from '../views/AlarmDetail.vue'
 
 Vue.use(VueRouter)
 const routes = [
@@ -24,13 +25,21 @@ const routes = [
     },
   },
   {
-    path: '/aleam/add',
-    name: 'AleamAdd',
-    component: AleamAdd,
+    path: '/alarm/add',
+    name: 'AlarmAdd',
+    component: AlarmAdd,
     meta: {
         index: 7, // ページ番号
     },
   },
+{
+    path: '/alarm/detail/:alarmId',
+    name: 'alarm.detail',
+    component: AlarmDetail,
+    meta: {
+        index: 8, // ページ番号
+    },
+},
   {
     path: '/about',
     name: 'About',

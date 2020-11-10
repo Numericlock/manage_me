@@ -6,83 +6,92 @@
             </div>
             <div class="next-alarm">
                 <div class="text">
-                    <span>Next Alarm Time: </span><span>{{ next_alarm_time }}</span>
+                    <span>Next Alarm Time: </span>
+                    <span>{{ next_alarm_time }}</span>
+                    <span v-if="next_alarm_time == null">ないやよー</span>
                 </div>
             </div>
         </div>
         <div class="add-button">
-				<router-link type="button" id="dotRadius" class="dotRadius" to="/aleam/add">
-                        <span class="plus"></span>
-    </router-link>
+            <router-link type="button" id="dotRadius" class="dotRadius" to="/alarm/add">
+                <span class="plus"></span>
+            </router-link>
         </div>
     </div>
 </template>
 
 <script>
     export default {
-        props:{
-          //time: String  
-        },
-        data: function () {
+        props: ['next_alarm_time'],
+        data: function() {
             return {
                 time: null,
                 next_time: null,
-                db:null,
-                schedule_db:null
+                db: null,
+                schedule_db: null
             }
         },
         computed: {
-            message: function () {
+            message: function() {
                 return this.time.toLocaleString()
             },
-            next_alarm_time: function () {
-                //return this.$store.getters.nextTime
-                console.log(this.$store.getters.nextTime);
-                return this.$store.getters.nextTime
+        },
+        methods: {
+            refresh: function() {
+                var dateNow = new Date();
+                var dayOfWeekStr = this.$store.state.days[dateNow.getDay()];
+                var hours = ("0" + dateNow.getHours()).slice(-2);
+                var minutes = ("0" + dateNow.getMinutes()).slice(-2);
+                var seconds = ("0" + dateNow.getSeconds()).slice(-2);
+                var currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
+                this.$store.dispatch('current_time', {
+                    time: currentTime
+                });
+                this.time = hours + ":" + minutes + ":" + seconds + "(" + dayOfWeekStr + ")";
+                setTimeout(() => {
+                    this.refresh()
+                }, 1000);
             }
         },
-        methods:{
-            refresh: function () {
-                var dateNow =  new Date();
-                var dayOfWeekStr = [ "日", "月", "火", "水", "木", "金", "土" ][dateNow.getDay()] ;
-                this.time = ("0"+dateNow.getHours()).slice(-2)+":"+("0"+dateNow.getMinutes()).slice(-2)+":"+("0"+dateNow.getSeconds()).slice(-2)+"("+dayOfWeekStr+")";
-                setTimeout(() => { this.refresh() }, 1000);
-            }
-        },
-        created: function () {
+        created: function() {
             this.refresh()
         }
     }
 </script>
 
 <style lang="scss">
-    .header-wrapper{
-        display:flex;
-        flex-direction: row; 
-        border-bottom:1px solid black;
-        .time-wrapper{
-            .time-now{
-                font-size:50px;
+    .header-wrapper {
+        display: flex;
+        flex-direction: row;
+        border-bottom: 1px solid black;
+
+        .time-wrapper {
+            .time-now {
+                font-size: 50px;
                 text-align: center;
-                border-bottom:1px solid black;  
+                border-bottom: 1px solid black;
             }
-            .next-alarm{
-                display:flex;
+
+            .next-alarm {
+                display: flex;
                 flex-direction: row;
-                height:40px;
-                .text{
+                height: 40px;
+
+                .text {
                     flex-grow: 7;
                     text-align: center;
                     line-height: 40px;
                 }
             }
         }
-        .add-button{
-            display:flex;
+
+        .add-button {
+            display: flex;
             justify-content: center;
-            flex-grow:3;
+            flex-grow: 3;
             line-height: 90px;
             $button_size: 80px;
+
             #dotRadius {
                 -webkit-appearance: button;
                 -webkit-writing-mode: horizontal-tb !important;
@@ -93,8 +102,8 @@
                 font: 400 13.3333px Arial;
                 padding: 1px 6px;
                 border-width: 2px;
-                background: transparent; 
-                border: double 2px #303136; 
+                background: transparent;
+                border: double 2px #303136;
                 border-style: dashed;
                 border-radius: 100%;
                 width: $button_size;
@@ -108,52 +117,56 @@
                 transition: transform ease-out 200ms;
                 transition: transform ease-out 200ms, -webkit-transform ease-out 200ms;
                 transition: border 0.3s;
-                .plus{
+
+                .plus {
                     display: block;
                     position: relative;
-                    background:#303136;
+                    background: #303136;
                     width: 4px;
                     height: $button_size/2;
                     left: $button_size*0.37;
-                    top:23.5%;
-                    border-radius:20px;
+                    top: 23.5%;
+                    border-radius: 20px;
                     transition: background-color 0.3s;
                 }
-                .plus:before{
+
+                .plus:before {
                     content: "";
                     position: absolute;
-                    background:#303136;
+                    background: #303136;
                     top: 50%;
                     left: ($button_size*-0.22);
                     width: $button_size/2;
                     height: 4px;
                     margin-top: -2px;
-                    border-radius:10px;
+                    border-radius: 10px;
                     transition: background-color 0.3s;
                 }
             }
-            #dotRadius:hover{		
-                border: double 2px #fff; 
+
+            #dotRadius:hover {
+                border: double 2px #fff;
                 border-style: solid;
                 color: black;
                 transition: border 0.6s;
 
             }
-            #dotRadius:focus{		
+
+            #dotRadius:focus {
                 outline: none;
             }
 
-            #dotRadius:hover > .plus{		
-                background:white;
+            #dotRadius:hover>.plus {
+                background: white;
                 transition: background-color 0.3s;
 
             }
-            #dotRadius:hover > .plus:before{		
-                background:white;
+
+            #dotRadius:hover>.plus:before {
+                background: white;
                 transition: background-color 0.3s;
 
             }
         }
     }
-
 </style>

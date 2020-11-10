@@ -40,8 +40,6 @@
     var Datastore = require('nedb');
     var path = require('path');
     const fs = window.fs;
-    //const fs = require('fs');
-    console.log(fs);
     const db = new Datastore({
         filename: path.join(app.getPath('userData'), '/sound.db'),
        //  filename: '../data.db',
@@ -102,8 +100,6 @@
             },
             file_out: function(e){
                 const files = e.target.files || e.dataTransfer.files;
-                alert( files[0].name);
-                alert( files[0].path);
                 this.file_name = files[0].name;
                 this.file_path = files[0].path;
                // fileReader.readAsArrayBuffer(e.target.files[0]);
@@ -146,12 +142,8 @@
                     }
                     sound_docs = docs;
                     this.sound_docs = sound_docs;
-                    console.log(this.sound_docs);
-                    
                 }.bind(this)); 
                 this.sound_docs = sound_docs;
-                console.log("あいうえお"+this.sound_docs);
-              //  console.log(sounds);
             },
             narudake: function() {
                 console.log("なるだけですけど？");
@@ -183,8 +175,6 @@
                 }.bind(this));
             },
             sound_stop:function(){
-               // var source = this.source;
-                console.log(this.source);
                 this.source.stop();
             }
         },

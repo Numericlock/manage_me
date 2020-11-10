@@ -1,11 +1,10 @@
 <template>
     <div class="wrapper">
-        <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:sound_name="sound_name"/>
-        <Header ref="nextAlarm2" />
-        <Counter />
+        <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:sound_name="sound_name" />
+        <Header ref="nextAlarm2" v-bind:next_alarm_time="next_alarm_time" />
         <div class="content">
             <transition name="costom-transition" :enter-active-class="transition.enter" :leave-active-class="transition.leave">
-                <router-view @nextAlarm='nextAlarm' />
+                <router-view @nextAlarm='nextAlarm()' v-bind:next_alarm_time="next_alarm_time" />
             </transition>
         </div>
         <div class="tabbar ">
@@ -40,7 +39,6 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.2/dist/sql-wasm.js'></script>
 <script>
     import Header from './components/Header.vue'
-    import Counter from './components/Counter.vue'
     import AlarmModal from './components/Modal.vue'
     const app = window.app;
     const cron = require('node-cron');
@@ -61,12 +59,10 @@
     var date = new Date();
     var hour = date.getHours();
     var minutes = date.getHours();
-    console.log(hour + minutes);
     export default {
         name: 'app',
         components: {
             Header,
-            Counter,
             AlarmModal
         },
         data() {
@@ -76,105 +72,133 @@
                     leave: '',
                 },
                 title: null,
-                time:null,
-                sound_path:null,
-                sound_name:null
+                time: null,
+                sound_path: null,
+                sound_name: null,
+                alarm: null,
             };
         },
         computed: {
-            count() {
-                return this.$store.state.count
+            next_alarm_time() {
+                return this.$store.getters.nextTime
             }
         },
         methods: {
-            setCron: function() {
-                schedule_db.find({}, function(err, docs) {
-                    docs.forEach((doc) => {
-                        var strTime = this.zeroPadding(doc.repeat, 5);
-                        var dayOfWeek = Number(strTime.substr(0, 1));
-                        var hours = Number(strTime.substr(1, 2));
-                        var minutes = Number(strTime.substr(3, 2));
-                        var days = [ "日", "月", "火", "水", "木", "金", "土" ];
-                        var repeat = minutes + ' ' + hours + ' * * ' + dayOfWeek;
-                        repeat = '* * * * * *';
-                        cron.schedule(repeat, function(){
-                            this.time = hours + ":" + strTime.substr(3, 2) + "(" + days[dayOfWeek] + ")";
-                            var Vm = this;
-                            db.findOne({ _id: doc.id }, function(err, doc) {
-                               Vm.title=doc.name;
-                                var Vm2 = Vm;
-                                console.log(Vm);
-                                sound_db.findOne({ _id: doc.sound_id }, function(err, doc) {
-                                   Vm2.sound_path=doc.path;
-                                   Vm2.sound_name=doc.name;
-                                    console.log(Vm2);
-                                    Vm2.$refs.alarmModal.open(doc.path);
-                                }.bind(Vm2));
-                            }.bind(Vm));
-                        }.bind(this));
-                    })
-                }.bind(this));
-            },
             zeroPadding: function(num, length) {
                 return ('0000000000' + num).slice(-length);
             },
             nextAlarm: function() {
+                console.log("Run nextAlarm");
                 var dateNow = new Date();
                 var day = dateNow.getDay();
                 var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2));
-                console.log(calcNum);
                 schedule_db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    console.log("load database completed.");
-                });
-                schedule_db.find({
-                    "repeat": {
-                        $gt: 0
-                    }
-                }).sort({
-                    repeat: 1
-                }).exec(function(err, docs) {
-                    var next_result = null;
-                    for (let i = 0; i < docs.length; i++) {
-                        if (calcNum < docs[i].repeat) {
-                            next_result = docs[i];
-                            break;
-                        }
-                    }
-                    if (next_result == null) {
-                        for (let i = docs.length - 1; i >= 0; i--) {
-                            if (calcNum > docs[i].repeat) {
+                    schedule_db.find({
+                        "repeat": {
+                            $gt: 0
+                        },
+                        isEnable: true
+                    }).sort({
+                        repeat: 1
+                    }).exec(function(err, docs) {
+                        var next_result = null;
+                        for (let i = 0; i < docs.length; i++) {
+                            if (calcNum < docs[i].repeat) {
                                 next_result = docs[i];
                                 break;
                             }
                         }
-                    }
-                    var strRepeat = ('0000000000' + next_result.repeat).slice(-5);
-                    this.$store.dispatch('next_alarm_refresh', {
-                        time: strRepeat
-                    });
-                }.bind(this));
+                        if (next_result == null) {
+                            for (let i = docs.length - 1; i >= 0; i--) {
+                                if (calcNum > docs[i].repeat) {
+                                    next_result = docs[i];
+                                    break;
+                                }
+                            }
+                        }
+                        if (next_result != null) {
+                            var strRepeat = ('0000000000' + next_result.repeat).slice(-5);
+                            this.$store.dispatch('next_alarm_refresh', {
+                                time: strRepeat,
+                                id: next_result.id
+                            });
+                        } else {
+                            //ここにアラームが何も無い場合の処理を記述
+                            this.$store.dispatch('next_alarm_refresh', {
+                                time: null,
+                                id: null
+                            });
+                        }
+                    }.bind(this));
+                });
+            },
+            openAlarm() {
+                var days = this.$store.state.days;
+                var id = this.$store.state.nextAlarmId;
+                var alarmTime = this.$store.state.nextAlarmTime;
+                this.time = Number(alarmTime.substr(1, 2)) + ":" + alarmTime.substr(3, 2) + "(" + days[Number(alarmTime.substr(0, 1))] + ")";
+                db.loadDatabase((error) => {
+                    if (error !== null) console.error(error);
+                    console.log("load database completed.");
+                    db.findOne({
+                        _id: id
+                    }, function(err, doc) {
+                        this.title = doc.name;
+                        var Vm2 = this;
+                        sound_db.findOne({
+                            _id: doc.sound_id
+                        }, function(err, doc) {
+                            Vm2.sound_path = doc.path;
+                            Vm2.sound_name = doc.name;
+                            Vm2.$refs.alarmModal.open(doc.path);
+                        }.bind(Vm2));
+                    }.bind(this));
+                });
+                this.nextAlarm();
             }
         },
         watch: {
             $route(to, from) {
                 // アニメーションの切り替え
-                if (to.meta.index == 7) {
+                if (to.meta.index == 7 || to.meta.index == 8) {
                     this.transition.enter = 'animate__animated animate__fadeIn';
                 } else if (to.meta.index > from.meta.index) {
                     this.transition.enter = 'animate__animated animate__fadeInRight';
-                    // this.transition.leave = 'animate__animated animate__fadeInRight';
                 } else {
                     this.transition.enter = 'animate__animated animate__fadeInLeft';
-                    // this.transition.leave = 'animate__animated animate__fadeInRight';
                 }
             },
+            next_alarm_time(val, old) {
+                console.log("watch:" + val);
+                var alarmTime = this.$store.state.nextAlarmTime;
+                var currentTime = this.$store.state.currentTime;
+                if (alarmTime != null && currentTime != null) {
+                    var alarmSeconds = to_minutes(alarmTime) * 60;
+                    var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
+                    var sevenDaysSeconds = 604800;
+                    function to_minutes(time) {
+                        var result = (Number(time.substr(0, 1)) * 24 * 60) +
+                            (Number(time.substr(1, 2)) * 60) +
+                            Number(time.substr(3, 2));
+                        return result;
+                    }
+                    var interval = 0;
+                    if (currentSeconds < alarmSeconds) {
+                        interval = (alarmSeconds - currentSeconds) * 1000;
+                    } else if (alarmSeconds < currentSeconds) {
+                        interval = ((sevenDaysSeconds - currentSeconds) + alarmSeconds) * 1000;
+                    }
+                    clearTimeout(this.alarm);
+                    this.alarm = setTimeout(this.openAlarm, interval);
+                }
+            }
         },
         mounted: function() {
             this.nextAlarm();
-            this.setCron();
         },
     };
+
 </script>
 <style>
     body * {
@@ -238,4 +262,5 @@
     .animate__fadeIn {
         --animate-duration: 1000ms;
     }
+
 </style>

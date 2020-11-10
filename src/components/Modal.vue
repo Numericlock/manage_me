@@ -5,12 +5,12 @@
         </transition>
         <transition name="fade">
             <div class="modal-content" v-show="isOpen">
-                <div><span>{{ title }}</span></div>
-                <div><span>{{ time }}</span></div>
-                <div><span>{{ sound_path }}</span></div>
-                <div><span>{{ sound_title }}</span></div>
-                <div><span>{{ sound_artist }}</span></div>
+                <span class="title">{{ title }}</span>
+                <span class="time">{{ time }}</span>
                 <canvas id="visualizer" ref="visualizer" :style="src" height="255"></canvas>
+                <div>
+                    <span>{{ sound_artist }}</span><span class="sound-title">{{ sound_title }}</span>
+                </div>
                 <div>
                     <button class="close-button" @click="close()">STOP</button>
                 </div>
@@ -25,38 +25,36 @@
     var source, animationId;
     export default {
         name: "Modal",
-        props: ['title','time','sound_path', 'sound_name'],
+        props: ['title', 'time', 'sound_path', 'sound_name'],
         data: function() {
             return {
                 isOpen: false,
                 source: null,
-                src:null,
-                sound_title:null,
-                sound_artist:null
+                src: null,
+                sound_title: null,
+                sound_artist: null
             };
         },
         methods: {
-            open (path) {
+            open(path) {
                 this.isOpen = true;
                 this.sound(path);
             },
             close: function() {
-                console.log(source);
                 if (source) {
                     source.stop();
                 }
                 this.isOpen = false;
             },
-            sound (path) {
+            sound(path) {
                 var audioContext = new AudioContext;
                 var canvas = this.$refs.visualizer;
                 var canvasContext = canvas.getContext('2d');
                 canvasContext.transform(1, 0, 0, -1, 0, 255);
                 //var calum = this.sound_docs.filter((v) => v._id==id);
                 // var path = calum[0].path.replace(app.getPath('music'), '');
-                const textfile = fs.readFileSync(path, (err, data) => {
+                const textfile = fs.readFileSync(path, (err) => {
                     if (err) throw err;
-                    console.log(data);
                 });
                 // const textfile = fs.readFileSync(app.getPath('music')+path, (err, data) => {
                 // if (err) throw err;
@@ -65,20 +63,18 @@
                 var blob = new Blob([textfile]);
 
                 mm.parseBlob(blob).then(metadata => {
-                    console.log(metadata);
-                    console.log(metadata.common.picture[0].data);
                     var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
-                    this.src = "background-image:url(data:;base64,"+j+")";
+                    this.src = "background-image:url(data:;base64," + j + ")";
                     this.sound_title = metadata.common.title;
                     this.sound_artist = metadata.common.artist;
-                  });
+                });
                 var toArrayBuffer = function(buf) {
                     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
                 }
                 var analyser = audioContext.createAnalyser();
                 analyser.fftSize = 512;
                 analyser.connect(audioContext.destination);
-                
+
                 audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer) {
                     if (source) {
                         source.stop();
@@ -101,7 +97,7 @@
 
                     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
                     for (var i = 0, len = spectrums.length; i < len; i++) {
-                        canvasContext.fillRect(i * 10, 0, 5, spectrums[i]/2);
+                        canvasContext.fillRect(i * 10, 0, 5, spectrums[i] / 2);
                         canvasContext.fillStyle = "orange";
                     }
 
@@ -114,6 +110,7 @@
 
         }
     };
+
 </script>
 <style lang="scss">
     .modal {
@@ -142,23 +139,30 @@
         box-shadow: 0px 0px 10px #f00;
         background-color: white;
         z-index: 11200;
-        canvas{
-           background-size:cover;
+
+        canvas {
+            background-size: cover;
             border-radius: 15px;
         }
-        div{
-            
-            .close-button{
+
+        .title {}
+
+        .time {
+            font-size: 20px;
+        }
+
+        div {
+            .close-button {
                 background: none;
                 border: none;
                 vertical-align: middle;
                 width: 150px;
-                height:50px;
-                margin:15px;
-                font-size:30px;
+                height: 50px;
+                margin: 15px;
+                font-size: 30px;
                 font-weight: bold;
                 border-radius: 18px;
-                background-color:red;
+                background-color: red;
             }
         }
     }
@@ -173,4 +177,5 @@
     .fade-leave-to {
         opacity: 0
     }
+
 </style>
