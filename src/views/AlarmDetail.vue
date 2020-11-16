@@ -15,7 +15,7 @@
                     Repeat
                 </label>
                 <div>
-                    <multiselect v-model="value" :value="value" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="複数選択" @select="onSelect" @remove="onRemove">
+                    <multiselect v-model="value" :value="value" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :searchable="false" :allow-empty="false" placeholder="複数選択" @select="onSelect" @remove="onRemove">
                     </multiselect>
                 </div>
             </div>
@@ -96,6 +96,7 @@
                     mm: '00'
                 },
                 value: [],
+                schedule_ids: [],
                 sound_value: null,
                 options: ['毎日', '月', '火', '水', '木', '金', '土', '日'],
                 sound_options: [],
@@ -104,12 +105,9 @@
                 is_enable: true, //alarmの初期値
                 isOpen: false,
                 is_change: false,
-                changeCount:0,
-                borderCount:5
+                changeCount: 0,
+                borderCount: 5
             }
-        },
-        computed: {
-            
         },
         methods: {
             alarmDelete() {
@@ -129,7 +127,6 @@
                     this.$emit('nextAlarm');
                     this.$router.push('/');
                 }.bind(this));
-
             },
             open() {
                 this.isOpen = true;
@@ -138,76 +135,77 @@
                 this.isOpen = false;
             },
             change: function() {
-                console.log("おっぱい");  
-                var id = this.$route.params.alarmId;
-                var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value , 0)];
-                var repeat = this.value;
-                var repeat_value;
-                if(repeat.indexOf('毎日') != -1){
-                    repeat_value = "毎日";
-                    this.value.splice(repeat.indexOf('毎日'),1);
-                }else{
-                    for(var i=0;i<repeat.length;i++){
-                        if(i==0){
-                            repeat_value = repeat[i];
-                        }else{
-                            repeat_value = repeat_value + "/" + repeat[i];
+                if (this.name != null && this.time != null && this.value != [] && this.sound_value != null) {
+                    var id = this.$route.params.alarmId;
+                    var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
+                    var repeat = this.value;
+                    var repeat_value;
+                    if (repeat.indexOf('毎日') != -1) {
+                        repeat_value = "毎日";
+                        this.value.splice(repeat.indexOf('毎日'), 1);
+                    } else {
+                        for (var i = 0; i < repeat.length; i++) {
+                            if (i == 0) {
+                                repeat_value = repeat[i];
+                            } else {
+                                repeat_value = repeat_value + "/" + repeat[i];
+                            }
                         }
                     }
-                }
-                var Vm = this;
-                schedule_db.remove({
-                    id: id
-                }, {
-                    multi: true
-                }, function(err, numRemoved) {
-                    var dateNow =  new Date()
+                    for (var j = 0; j < this.schedule_ids.length; j++) {
+                        schedule_db.remove({
+                            _id: this.schedule_ids[j]
+                        });
+                    }
                     var days = this.$store.state.days;
+                    var dateNow =  new Date();
+                    var next_alarm_id = this.$store.state.nextAlarmId;
                     var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
                     var currentTime = String(dateNow.getDay())+("0"+dateNow.getHours()).slice(-2)+("0"+dateNow.getMinutes()).slice(-2);
-                    console.log(numRemoved);
-                    for(var i=0;i<this.value.length;i++){
-                        var time = Number(days.indexOf(this.value[i])+this.time.HH+this.time.mm);
-                        if(currentTime < time && time < nextAlarm){
-                            nextAlarm = time;
-                        }else if(nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time){
-                            nextAlarm = time;
+                    for (var g = 0; g < this.value.length; g++) {
+                        var time = Number(days.indexOf(this.value[g]) + this.time.HH + this.time.mm);
+                        if(id != next_alarm_id){
+                            if (currentTime < time && time < nextAlarm) {
+                                nextAlarm = time;
+                            } else if (nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time) {
+                                nextAlarm = time;
+                            }
                         }
                         schedule_db.insert({
-                            "id":id,
-                            "repeat":time,
-                            "isEnable":Vm.is_enable,
-                        }, function (err) {
+                            "id": id,
+                            "repeat": time,
+                            "isEnable": this.is_enable,
+                        }, function(err) {
                             if (err !== null) console.error(err);
-                            
-                        }.bind(Vm));
+                            this.$emit('nextAlarm');
+                            console.log("??");
+                        }.bind(this));
                     }
-                    var strNextAlarm= ('0000000000' + nextAlarm).slice(-5);
+                    var strNextAlarm = ('0000000000' + nextAlarm).slice(-5);
                     console.log(strNextAlarm);
                     console.log(id);
+                    //////ＮＥＸＴアラーム自身を更新時の処理を記述する必要あり
                     this.$store.dispatch('next_alarm_refresh', {
                         time: strNextAlarm,
-                        id:id
+                        id: id
                     });
-                   // this.$emit('nextAlarm');
-                }.bind(this));
-                
-                db.update({
-                    _id: id
-                }, {
-                    $set: {
-                        name: this.name,
-                        hours:this.time.HH,
-                        minutes:this.time.mm,
-                        sound_id:sound_id,
-                        repeat:repeat_value,
-                        
-                    }
-                }, {}, function(err, numReplaced) {
-                    if (err !== null) console.error(err);
-                    console.log("isEnable:False," + 'Replaced:', numReplaced);
-                }.bind(this));
-                
+                    db.update({
+                        _id: id
+                    }, {
+                        $set: {
+                            name: this.name,
+                            hours: this.time.HH,
+                            minutes: this.time.mm,
+                            sound_id: sound_id,
+                            repeat: repeat_value,
+
+                        }
+                    }, {}, function(err, numReplaced) {
+                        if (err !== null) console.error(err);
+                        console.log("isEnable:False," + 'Replaced:', numReplaced);
+                        this.$router.push('/')
+                    }.bind(this));
+                }
             },
             onSelect(option) {
                 if (option === '毎日') {
@@ -256,30 +254,30 @@
                     }, function(err, docs) {
                         var days = this.$store.state.days;
                         docs.forEach((doc) => {
-                            this.value.push(days[Number(('0000000000' + doc.repeat).slice(-5).substr(0, 1))]);
+                            this.schedule_ids.push(doc._id);
+                            this.value.push(days[Number(this.zeroPadding(doc.repeat, 5).substr(0, 1))]);
                         });
                         if (docs.length == 7) {
                             this.value.push("毎日");
                         }
-                        var time = ('0000000000' + docs[0].repeat).slice(-5);
+                        var time = this.zeroPadding(docs[0].repeat, 5);
                         this.time.HH = time.substr(1, 2);
                         this.time.mm = time.substr(3, 2);
-                        
                     }.bind(this));
                 });
             },
-            changeCountUp(){
+            changeCountUp() {
                 this.changeCount++;
-                if(this.changeCount > this.borderCount ){
+                if (this.changeCount > this.borderCount && !this.is_empty(this.name) && !this.is_empty(this.time) && !this.is_empty(this.value) && !this.is_empty(this.sound_value)) {
                     this.is_change = true;
+                } else {
+                    this.is_change = false;
                 }
             }
         },
-        mounted: function() {
-        },
+        mounted: function() {},
         created: function() {
             this.getSoundData();
-            console.log(this.$route.params.alarmId);
             this.getAlarmData(this.$route.params.alarmId);
         },
         watch: {

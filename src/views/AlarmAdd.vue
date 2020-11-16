@@ -165,7 +165,7 @@
                                 if (err !== null) console.error(err);
                             }.bind(Vm));
                         }
-                        var strNextAlarm= ('0000000000' + nextAlarm).slice(-5);
+                        var strNextAlarm= this.zeroPadding(nextAlarm,5);
                         this.$store.dispatch('next_alarm_refresh', {
                             time: strNextAlarm,
                             id:newDoc._id

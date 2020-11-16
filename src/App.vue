@@ -84,9 +84,6 @@
             }
         },
         methods: {
-            zeroPadding: function(num, length) {
-                return ('0000000000' + num).slice(-length);
-            },
             nextAlarm: function() {
                 console.log("Run nextAlarm");
                 var dateNow = new Date();
@@ -118,7 +115,7 @@
                             }
                         }
                         if (next_result != null) {
-                            var strRepeat = ('0000000000' + next_result.repeat).slice(-5);
+                            var strRepeat = this.zeroPadding(next_result.repeat,5);
                             this.$store.dispatch('next_alarm_refresh', {
                                 time: strRepeat,
                                 id: next_result.id
@@ -198,7 +195,6 @@
             this.nextAlarm();
         },
     };
-
 </script>
 <style>
     body * {
