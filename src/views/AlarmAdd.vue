@@ -8,7 +8,7 @@
                 <label>
                     Name
                 </label>
-                <input type="text" class="alarm-input" id="aleamName" placeholder="アラーム名" v-model="name"> 
+                <input type="text" class="alarm-input" id="aleamName" placeholder="アラーム名" v-model="name">
             </div>
             <div class="input-wrapper">
                 <label>
@@ -18,11 +18,11 @@
                    <multiselect
                         v-model="value"
                         :value="value"
-                        :options="options" 
-                        :multiple="true" 
-                        :close-on-select="false" 
-                        :clear-on-select="false" 
-                        :preserve-search="true" 
+                        :options="options"
+                        :multiple="true"
+                        :close-on-select="false"
+                        :clear-on-select="false"
+                        :preserve-search="true"
                         placeholder="複数選択"
                         @select="onSelect"
                         @remove="onRemove">
@@ -34,12 +34,12 @@
                     Sound
                 </label>
                 <div>
-                    <multiselect 
-                         v-model="sound_value" 
-                         deselect-label="Can't remove this value" 
-                         placeholder="１つ選択" 
-                         :options="sound_options" 
-                         :searchable="false" 
+                    <multiselect
+                         v-model="sound_value"
+                         deselect-label="Can't remove this value"
+                         placeholder="１つ選択"
+                         :options="sound_options"
+                         :searchable="false"
                          :allow-empty="false">
                     </multiselect>
                 </div>
@@ -49,9 +49,9 @@
                     Time
                 </label>
                 <div>
-                    <vue-timepicker 
-                    v-model="time" 
-                    id="timepicker" 
+                    <vue-timepicker
+                    v-model="time"
+                    id="timepicker"
                     placeholder="時間を入力"
                     hide-disabled-hours
                     hide-disabled-minutes
@@ -59,7 +59,7 @@
                 </div>
             </div>
             <div class="submit-wrapper">
-                <span v-on:click="test">作成</span>
+                <span v-on:click="alarmAdd">作成</span>
             </div>
         </form>
     </div>
@@ -71,23 +71,23 @@
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
-    const db = new Datastore({ 
+    const db = new Datastore({
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
-    const sound_db = new Datastore({ 
+    const sound_db = new Datastore({
         filename: path.join(app.getPath('userData'), '/sound.db'),
         autoload: true
     });
-    const schedule_db = new Datastore({ 
+    const schedule_db = new Datastore({
         filename: path.join(app.getPath('userData'), '/schedule.db'),
         autoload: true
     });
 
     export default {
-        components: { 
+        components: {
             'vue-timepicker': VueTimepicker,
-            Multiselect 
+            Multiselect
         },
         data () {
           return {
@@ -123,30 +123,58 @@
                     this.value.splice(value.indexOf('毎日'),1);
                 }
             },
-            test(){
+            alarmAdd(){
+
                 //this.$emit('setCron', "a");
                 //db.remove({}, { multi: true });
                 //schedule_db.remove({}, { multi: true });
                 if (this.name !=null && this.time!=null && this.value != [] && this.sound_value != null){
-                    var repeat = this.value;
-                    var repeat_value;
-                    if(repeat.indexOf('毎日') != -1){
-                        repeat_value = "毎日";
-                        this.value.splice(repeat.indexOf('毎日'),1);
+                  var repeat = this.value;
+                  var repeat_value;
+                  var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value , 0)];
+                  var type = "alarm";
+                  var time = String(this.time.HH)+String(this.time.mm);
+                  var days = this.$store.state.days;
+                  var weeks_array=[];
+                  var weeks;
+                  if(repeat.indexOf('毎日') != -1){
+                      repeat_value = "毎日";
+                      this.value.splice(repeat.indexOf('毎日'),1);
+                  }else{
+                      for(var i=0;i<repeat.length;i++){
+                          if(i==0){
+                              repeat_value = repeat[i];
+                              if(String(days.indexOf(repeat[i])) != -1){
+                                weeks_array.push(days.indexOf(repeat[i]));
+                              }
+                          }else{
+                              repeat_value = repeat_value + "/" + repeat[i];
+                              if(String(days.indexOf(repeat[i])) != -1){
+                                weeks_array.push(days.indexOf(repeat[i]));
+                              }
+                          }
+                      }
+                  }
+                  weeks_array.sort(function(a,b){
+                    if( a < b ) return -1;
+                    if( a > b ) return 1;
+                    return 0;
+                  });
+                  for(i=0; i<weeks_array.length;i++){
+                    if(weeks){
+                    weeks += String(weeks_array[i]);
                     }else{
-                        for(var i=0;i<repeat.length;i++){
-                            if(i==0){
-                                repeat_value = repeat[i];
-                            }else{
-                                repeat_value = repeat_value + "/" + repeat[i];
-                            }
-                        }
+                      weeks= String(weeks_array[i]);
                     }
-                    var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value , 0)];
-                    var dbData =  {"name":this.name,"hours":this.time.HH,"minutes":this.time.mm,"sound_id":sound_id,"repeat":repeat_value,"isEnable":this.is_enable};
+                  }
+                    console.log(time);
+                    console.log(weeks);
+                    //var dbData =  {"type":type,"name":this.name,"hours":this.time.HH,"minutes":this.time.mm,"sound_id":sound_id,"repeat":repeat_value,"isEnable":this.is_enable};
+                    var dbData =  {"type":type,"name":this.name,"time":time,"weeks":weeks,"sound_id":sound_id,"isEnable":this.is_enable};
                     var Vm = this;
                     db.insert(dbData, function (err, newDoc) {
-                        var dateNow =  new Date()
+                      console.log(newDoc);
+                        var dateNow =  new Date();
                         var days = this.$store.state.days;
                         var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
                         var currentTime = String(dateNow.getDay())+("0"+dateNow.getHours()).slice(-2)+("0"+dateNow.getMinutes()).slice(-2);
@@ -186,7 +214,7 @@
                         this.sound_ids.push(doc._id);
                     })
                     this.sound_data = docs;
-                }.bind(this)); 
+                }.bind(this));
             }
         },
         mounted: function(){
@@ -222,7 +250,7 @@
                     min-width:100px;
                     width:100px;
                     line-height: 50px;
-                    
+
                 }
                 .alarm-input{
                     flex-grow: 2;
@@ -239,7 +267,7 @@
                     outline: none;
                 }
                 .alarm-input::placeholder{
-                   color: #adadad !important; 
+                   color: #adadad !important;
                 }
                 div{
                     flex-grow: 2;
@@ -256,7 +284,7 @@
                             font-size: 14px;
                             font-weight: bolder;
                             color:#35495e;
-                            
+
                         }
                         input:focus{
                             outline: none;
@@ -290,7 +318,7 @@
                         }
                     }
                 }
-                
+
             }
             .submit-wrapper{
                 display:flex;
@@ -311,6 +339,6 @@
             }
         }
     }
-    
+
 </style>
 <style src="vue-multiselect/dist/vue-multiselect.min.css">

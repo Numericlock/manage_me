@@ -5,8 +5,8 @@
                 <router-link class="alarm-router" v-bind:to="{name: 'alarm.detail', params: {alarmId: alarm._id}}">
 
                     <div class="aleam-time">
-                        <span>{{alarm.repeat}}</span>
-                        <span>{{alarm.hours}}:{{alarm.minutes}}</span>
+                        <span>{{alarm.weeksString}}</span>
+                        <span>{{alarm.displayTime}}</span>
                     </div>
                     <div class="aleam-sound">
                         <span>{{alarm.name}}</span>
@@ -33,7 +33,7 @@
     var path = require('path');
     const db = new Datastore({
         filename: path.join(app.getPath('userData'), '/alarm.db'),
-        //  filename: '../data.db',
+        //filename: '../data.db',
         autoload: true
     });
     const schedule_db = new Datastore({
@@ -53,6 +53,24 @@
                 var count = this.$store.getters.alarmCount;
                 if (count == 0) return true
                 else return false
+            },
+            alarmDays(data){
+              var weeks = data;
+              var weeksString;
+              console.log(weeks);
+              console.log(weeks.length);
+              if(weeks == "0123456"){
+                weeksString = "毎日";
+              }else{
+                for(var i=0;i<weeks.length();i++){
+                  if(weeksString){
+                    weeksString = weeks.substr(i,1);
+                  }else{
+                    weeksString += "/"+weeks.substr(i,1);
+                  }
+                }
+              }
+              return weeksString;
             }
         },
         methods: {
@@ -60,8 +78,23 @@
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                 });
-                db.find({}, function(err, docs) {
+                //db.find({}, function(err, docs) {
+                db.find({type: "alarm"}, function(err, docs) {
                     this.alarm_data = docs;
+                    var days = this.$store.state.days;
+                    docs.forEach((doc) => {
+                        var weeks = doc.weeks;
+                        var time = doc.time;
+                        var weeksString;
+                        var displayTime;
+                        for(var i=0;i<weeks.length;i++){
+                          if(!weeksString)weeksString = days[Number(weeks.substr(i,1))];
+                          else weeksString += "/"+days[Number(weeks.substr(i,1))];
+                        }
+                        doc.weeksString = weeksString;
+                        displayTime = time.substr(0,2)+":"+time.substr(2,2);
+                        doc.displayTime = displayTime;
+                    });
                 }.bind(this));
                 db.count({}, (error, numOfDocs) => {
                     this.$store.dispatch('alarm_count', {

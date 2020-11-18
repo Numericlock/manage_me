@@ -48,6 +48,7 @@
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
+	console.log(app.getPath('userData'));
     const schedule_db = new Datastore({
         filename: path.join(app.getPath('userData'), '/schedule.db'),
         autoload: true
@@ -89,17 +90,23 @@
                 var dateNow = new Date();
                 var day = dateNow.getDay();
                 var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2));
-                schedule_db.loadDatabase((error) => {
+                db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    schedule_db.find({
-                        "repeat": {
-                            $gt: 0
-                        },
-                        isEnable: true
-                    }).sort({
-                        repeat: 1
-                    }).exec(function(err, docs) {
+                    console.log("うごいてる？");
+                    db.find({
+                      type:"alarm",
+                      isEnable: true}, function(err, docs) {
                         var next_result = null;
+                        var schedules=[];
+                        docs.forEach((doc) => {
+                          var time =doc.time;
+                          var weeks = doc.weeks;
+                          for(var i = 0;weeks.length;i++){
+                            schedules.push({"id":doc._id,"time":weeks.substr(i,1)+time});
+                          }
+                        });
+                        console.log(schedules);
+
                         for (let i = 0; i < docs.length; i++) {
                             if (calcNum < docs[i].repeat) {
                                 next_result = docs[i];
