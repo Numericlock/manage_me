@@ -4,7 +4,7 @@
         <Header ref="nextAlarm2" v-bind:next_alarm_time="next_alarm_time" />
         <div class="content">
             <transition name="costom-transition" :enter-active-class="transition.enter" :leave-active-class="transition.leave">
-                <router-view @nextAlarm='nextAlarm()' v-bind:next_alarm_time="next_alarm_time" />
+                <router-view @nextAlarm='nextAlarm()' @openModal='openModal' v-bind:next_alarm_time="next_alarm_time" />
             </transition>
         </div>
         <div class="tabbar ">
@@ -15,6 +15,16 @@
                         l254.107,99.866l209.756-104.105V228.575L512,221.753L392.859,6.031z M270.335,466.165l-91.76-36.065V325.503l-62.872-18.629v98.51
                         l-53.085-20.866V218.561l78.208-119.232l120.232,221.945l3.856-1.519l5.421-2.147V466.165z M463.136,382.226l-164.858,81.829
                         V306.52l164.858-65.383V382.226z"></path>
+                    </g>
+                </svg>
+            </router-link>
+            <router-link class="tabbar-icon-wrapper" to="/sounds">
+                <svg version="1.1" viewBox="0 0 512 512"  xml:space="preserve">
+                    <g>
+                        <path class="st0" d="M134.75,0v307.684c-14.347-2.241-29.784-1.552-45.222,3.303c-46.227,14.534-73.715,58.046-61.393,97.194
+                        c12.307,39.063,59.771,58.996,105.984,44.462c35.443-11.144,62.887-39.349,66.822-69.478V117.602l219.68,41.776v202.82
+                        c-14.06-2.068-29.154-1.35-44.218,3.403c-46.227,14.578-73.715,58.09-61.393,97.153c12.294,39.133,59.756,59.024,105.983,44.49
+                        c36.751-11.575,63.361-41.504,65.816-72.898V60.676L134.75,0z"></path>
                     </g>
                 </svg>
             </router-link>
@@ -48,11 +58,7 @@
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
-	console.log(app.getPath('userData'));
-    const schedule_db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/schedule.db'),
-        autoload: true
-    });
+    console.log(app.getPath('userData'));
     const sound_db = new Datastore({
         filename: path.join(app.getPath('userData'), '/sound.db'),
         autoload: true
@@ -92,37 +98,44 @@
                 var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2));
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    console.log("うごいてる？");
                     db.find({
-                      type:"alarm",
-                      isEnable: true}, function(err, docs) {
+                        type: "alarm",
+                        isEnable: true
+                    }, function(err, docs) {
                         var next_result = null;
-                        var schedules=[];
+                        var schedules = [];
+                        console.log(docs);
                         docs.forEach((doc) => {
-                          var time =doc.time;
-                          var weeks = doc.weeks;
-                          for(var i = 0;weeks.length;i++){
-                            schedules.push({"id":doc._id,"time":weeks.substr(i,1)+time});
-                          }
+                            var time = doc.time;
+                            var weeks = doc.weeks;
+                            console.log(weeks);
+                            for (var i = 0; i < weeks.length; i++) {
+                                schedules.push({
+                                    "id": doc._id,
+                                    "name": doc.name,
+                                    "sound_id": doc.sound_id,
+                                    "time": Number(weeks.substr(i, 1) + time)
+                                });
+                            }
                         });
                         console.log(schedules);
+                        console.log(calcNum);
+                        schedules.sort(function(a, b) {
+                            var one = a.time - calcNum;
+                            var two = b.time - calcNum;
+                            if (Math.sign(a.time - calcNum) == -1) one = a.time - calcNum + 62359;
+                            else one = a.time - calcNum;
+                            if (Math.sign(two) == -1) two = b.time - calcNum + 62359;
+                            else two = b.time - calcNum;
 
-                        for (let i = 0; i < docs.length; i++) {
-                            if (calcNum < docs[i].repeat) {
-                                next_result = docs[i];
-                                break;
-                            }
-                        }
-                        if (next_result == null) {
-                            for (let i = docs.length - 1; i >= 0; i--) {
-                                if (calcNum > docs[i].repeat) {
-                                    next_result = docs[i];
-                                    break;
-                                }
-                            }
-                        }
-                        if (next_result != null) {
-                            var strRepeat = this.zeroPadding(next_result.repeat,5);
+                            if (one > two) return 1;
+                            if (one < two) return -1;
+                            return 0;
+                        });
+                        console.log(schedules);
+                        next_result = schedules[0];
+                        if (!this.is_empty(next_result)) {
+                            var strRepeat = this.zeroPadding(next_result.time, 5);
                             this.$store.dispatch('next_alarm_refresh', {
                                 time: strRepeat,
                                 id: next_result.id
@@ -137,14 +150,13 @@
                     }.bind(this));
                 });
             },
-            openAlarm() {
+            openAlarm:function(){
                 var days = this.$store.state.days;
                 var id = this.$store.state.nextAlarmId;
                 var alarmTime = this.$store.state.nextAlarmTime;
                 this.time = Number(alarmTime.substr(1, 2)) + ":" + alarmTime.substr(3, 2) + "(" + days[Number(alarmTime.substr(0, 1))] + ")";
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    console.log("load database completed.");
                     db.findOne({
                         _id: id
                     }, function(err, doc) {
@@ -160,6 +172,11 @@
                     }.bind(this));
                 });
                 this.nextAlarm();
+            },
+            openModal(...args){
+                console.log(args);
+                this.$refs.alarmModal.open(args[0],false);
+                
             }
         },
         watch: {
@@ -181,6 +198,7 @@
                     var alarmSeconds = to_minutes(alarmTime) * 60;
                     var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
                     var sevenDaysSeconds = 604800;
+
                     function to_minutes(time) {
                         var result = (Number(time.substr(0, 1)) * 24 * 60) +
                             (Number(time.substr(1, 2)) * 60) +
@@ -202,6 +220,7 @@
             this.nextAlarm();
         },
     };
+
 </script>
 <style>
     body * {

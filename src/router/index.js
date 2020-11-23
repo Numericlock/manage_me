@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 import Setting from '../views/Setting.vue'
 import AlarmAdd from '../views/AlarmAdd.vue'
 import AlarmDetail from '../views/AlarmDetail.vue'
+import Sounds from '../views/Sounds.vue'
 
 Vue.use(VueRouter)
 const routes = [
@@ -20,6 +21,14 @@ const routes = [
     path: '/setting',
     name: 'Setting',
     component: Setting,
+    meta: {
+        index: 2, // ページ番号
+    },
+  },
+  {
+    path: '/sounds',
+    name: 'Sounds',
+    component: Sounds,
     meta: {
         index: 1, // ページ番号
     },

@@ -36,10 +36,6 @@
         //filename: '../data.db',
         autoload: true
     });
-    const schedule_db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/schedule.db'),
-        autoload: true
-    });
     export default {
         name: 'Home',
         props: ['next_alarm_time'],
@@ -53,24 +49,6 @@
                 var count = this.$store.getters.alarmCount;
                 if (count == 0) return true
                 else return false
-            },
-            alarmDays(data){
-              var weeks = data;
-              var weeksString;
-              console.log(weeks);
-              console.log(weeks.length);
-              if(weeks == "0123456"){
-                weeksString = "毎日";
-              }else{
-                for(var i=0;i<weeks.length();i++){
-                  if(weeksString){
-                    weeksString = weeks.substr(i,1);
-                  }else{
-                    weeksString += "/"+weeks.substr(i,1);
-                  }
-                }
-              }
-              return weeksString;
             }
         },
         methods: {
@@ -79,7 +57,9 @@
                     if (error !== null) console.error(error);
                 });
                 //db.find({}, function(err, docs) {
-                db.find({type: "alarm"}, function(err, docs) {
+                db.find({
+                    type: "alarm"
+                }, function(err, docs) {
                     this.alarm_data = docs;
                     var days = this.$store.state.days;
                     docs.forEach((doc) => {
@@ -87,12 +67,16 @@
                         var time = doc.time;
                         var weeksString;
                         var displayTime;
-                        for(var i=0;i<weeks.length;i++){
-                          if(!weeksString)weeksString = days[Number(weeks.substr(i,1))];
-                          else weeksString += "/"+days[Number(weeks.substr(i,1))];
+                        if (weeks == "0123456") {
+                            weeksString = "毎日";
+                        } else {
+                            for (var i = 0; i < weeks.length; i++) {
+                                if (!weeksString) weeksString = days[Number(weeks.substr(i, 1))];
+                                else weeksString += "/" + days[Number(weeks.substr(i, 1))];
+                            }
                         }
                         doc.weeksString = weeksString;
-                        displayTime = time.substr(0,2)+":"+time.substr(2,2);
+                        displayTime = time.substr(0, 2) + ":" + time.substr(2, 2);
                         doc.displayTime = displayTime;
                     });
                 }.bind(this));
@@ -103,56 +87,22 @@
                 });
             },
             toggleChange(id, isEnable) {
-                schedule_db.loadDatabase((error) => {
+                db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    const options = {
-                        multi: true
-                    };
-                    if (isEnable) {
-                        db.update({
-                            _id: id
-                        }, {
-                            $set: {
-                                isEnable: false
-                            }
-                        }, {}, function(err, numReplaced) {
-                            if (err !== null) console.error(err);
-                            console.log("isEnable:False," + 'Replaced:', numReplaced);
-                        }.bind(this));
-                        schedule_db.update({
-                            id: id
-                        }, {
-                            $set: {
-                                isEnable: false
-                            }
-                        }, options, function(err, numReplaced) {
-                            if (err !== null) console.error(err);
-                            console.log("isEnable:False," + 'Replaced:', numReplaced);
-                            this.$emit('nextAlarm');
-                        }.bind(this));
-                    } else {
-                        db.update({
-                            _id: id
-                        }, {
-                            $set: {
-                                isEnable: true
-                            }
-                        }, {}, function(err, numReplaced) {
-                            if (err !== null) console.error(err);
-                            console.log("isEnable:True," + 'Replaced:', numReplaced);
-                        }.bind(this));
-                        schedule_db.update({
-                            id: id
-                        }, {
-                            $set: {
-                                isEnable: true
-                            }
-                        }, options, function(err, numReplaced) {
-                            if (err !== null) console.error(err);
-                            console.log("isEnable:True," + 'Replaced:', numReplaced);
-                            this.$emit('nextAlarm');
-                        }.bind(this));
-                    }
+                    var update_is_enable;
+                    if (isEnable) update_is_enable = false;
+                    else update_is_enable = true;
+                    db.update({
+                        _id: id
+                    }, {
+                        $set: {
+                            isEnable: update_is_enable
+                        }
+                    }, {}, function(err, numReplaced) {
+                        if (err !== null) console.error(err);
+                        console.log("isEnable:True," + 'Replaced:', numReplaced);
+                        this.$emit('nextAlarm');
+                    }.bind(this));
                 });
             }
         },
@@ -166,13 +116,15 @@
 
 <style lang="scss">
     a:link {
-      color: #333;
-      text-decoration: none;
-}
-    .alarm-router{
+        color: #333;
+        text-decoration: none;
+    }
+
+    .alarm-router {
         display: flex;
         flex-grow: 6;
     }
+
     /*スクロールバーの横幅指定*/
     .aleam-lists::-webkit-scrollbar {
         width: 15px;

@@ -5,8 +5,8 @@
         </transition>
         <transition name="fade">
             <div class="modal-content" v-show="isOpen">
-                <span class="title">{{ title }}</span>
-                <span class="time">{{ time }}</span>
+                <span class="title" v-if="isAlarm">{{ title }}</span>
+                <span class="time" v-if="isAlarm">{{ time }}</span>
                 <canvas id="visualizer" ref="visualizer" :style="src" height="255"></canvas>
                 <div>
                     <span>{{ sound_artist }}</span><span class="sound-title">{{ sound_title }}</span>
@@ -29,6 +29,7 @@
         data: function() {
             return {
                 isOpen: false,
+                isAlarm: true,
                 source: null,
                 src: null,
                 sound_title: null,
@@ -36,9 +37,10 @@
             };
         },
         methods: {
-            open(path) {
+            open(path,is_alarm) {
                 this.isOpen = true;
                 this.sound(path);
+                this.isAlarm = is_alarm;
             },
             close: function() {
                 if (source) {

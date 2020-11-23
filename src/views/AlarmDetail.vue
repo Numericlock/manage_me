@@ -75,10 +75,6 @@
         filename: path.join(app.getPath('userData'), '/sound.db'),
         autoload: true
     });
-    const schedule_db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/schedule.db'),
-        autoload: true
-    });
 
     export default {
         name: 'alarmDetail',
@@ -118,15 +114,6 @@
                 }, function(err, numRemoved) {
                     console.log(numRemoved);
                 }.bind(this));
-                schedule_db.remove({
-                    id: this.$route.params.alarmId
-                }, {
-                    multi: true
-                }, function(err, numRemoved) {
-                    console.log(numRemoved);
-                    this.$emit('nextAlarm');
-                    this.$router.push('/');
-                }.bind(this));
             },
             open() {
                 this.isOpen = true;
@@ -135,51 +122,49 @@
                 this.isOpen = false;
             },
             change: function() {
-                if (this.name != null && this.time != null && this.value != [] && this.sound_value != null) {
+                if (!this.is_empty(this.name) && !this.is_empty(this.time) && !this.is_empty(this.value) && !this.is_empty(this.sound_value)) {
                     var id = this.$route.params.alarmId;
                     var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
-                    var repeat = this.value;
-                    var repeat_value;
-                    if (repeat.indexOf('毎日') != -1) {
-                        repeat_value = "毎日";
-                        this.value.splice(repeat.indexOf('毎日'), 1);
-                    } else {
-                        for (var i = 0; i < repeat.length; i++) {
-                            if (i == 0) {
-                                repeat_value = repeat[i];
-                            } else {
-                                repeat_value = repeat_value + "/" + repeat[i];
-                            }
-                        }
-                    }
-                    for (var j = 0; j < this.schedule_ids.length; j++) {
-                        schedule_db.remove({
-                            _id: this.schedule_ids[j]
-                        });
-                    }
+                    var type = "alarm";
+                    var time = String(this.time.HH) + String(this.time.mm);
                     var days = this.$store.state.days;
-                    var dateNow =  new Date();
+                    var weeks_string_array = this.value;
+                    var weeks_array = [];
+                    var weeks;
+                    
+                    for (var i = 0; i < weeks_string_array.length; i++) {
+                        if(weeks_string_array[i] != "毎日")weeks_array.push(days.indexOf(weeks_string_array[i]));
+                    }
+                    weeks_array.sort(function(a, b) {
+                        if (a < b) return -1;
+                        if (a > b) return 1;
+                        return 0;
+                    });
+                    for (i = 0; i < weeks_array.length; i++) {
+                        if (weeks) weeks += String(weeks_array[i]);
+                        else weeks = String(weeks_array[i]);
+                    }
+                    var dbData = {
+                        "type": type,
+                        "name": this.name,
+                        "time": time,
+                        "weeks": weeks,
+                        "sound_id": sound_id,
+                        "isEnable": this.is_enable
+                    };
+                    var dateNow = new Date();
                     var next_alarm_id = this.$store.state.nextAlarmId;
                     var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
-                    var currentTime = String(dateNow.getDay())+("0"+dateNow.getHours()).slice(-2)+("0"+dateNow.getMinutes()).slice(-2);
-                    for (var g = 0; g < this.value.length; g++) {
-                        var time = Number(days.indexOf(this.value[g]) + this.time.HH + this.time.mm);
-                        if(id != next_alarm_id){
-                            if (currentTime < time && time < nextAlarm) {
-                                nextAlarm = time;
-                            } else if (nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time) {
-                                nextAlarm = time;
+                    var currentTime = String(dateNow.getDay()) + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2);
+                    for (i = 0; i < this.value.length; i++) {
+                        var time2 = Number(days.indexOf(this.value[i]) + this.time.HH + this.time.mm);
+                        if (id != next_alarm_id) {
+                            if (currentTime < time2 && time2 < nextAlarm) {
+                                nextAlarm = time2;
+                            } else if (nextAlarm < currentTime && currentTime < time2 && time2 <= 62359 || nextAlarm < currentTime && time2 < nextAlarm && 0 <= time2) {
+                                nextAlarm = time2;
                             }
                         }
-                        schedule_db.insert({
-                            "id": id,
-                            "repeat": time,
-                            "isEnable": this.is_enable,
-                        }, function(err) {
-                            if (err !== null) console.error(err);
-                            this.$emit('nextAlarm');
-                            console.log("??");
-                        }.bind(this));
                     }
                     var strNextAlarm = ('0000000000' + nextAlarm).slice(-5);
                     console.log(strNextAlarm);
@@ -192,14 +177,7 @@
                     db.update({
                         _id: id
                     }, {
-                        $set: {
-                            name: this.name,
-                            hours: this.time.HH,
-                            minutes: this.time.mm,
-                            sound_id: sound_id,
-                            repeat: repeat_value,
-
-                        }
+                        $set: dbData
                     }, {}, function(err, numReplaced) {
                         if (err !== null) console.error(err);
                         console.log("isEnable:False," + 'Replaced:', numReplaced);
@@ -238,33 +216,22 @@
                     db.findOne({
                         _id: id
                     }, function(err, doc) {
+                        var days = this.$store.state.days;
                         this.name = doc.name;
-                        var Vm2 = this;
+                        this.time.HH = doc.time.substr(0, 2);
+                        this.time.mm = doc.time.substr(2, 2);
+                        for (var i = 0; i < doc.weeks.length; i++) {
+                            this.value.push(days[Number(doc.weeks.substr(i, 1))]);
+                            if (i == 6) this.value.push("毎日");
+                        }
                         sound_db.findOne({
                             _id: doc.sound_id
                         }, function(err, doc) {
-                            Vm2.sound_value = doc.name;
-                        }.bind(Vm2));
+                            this.sound_value = doc.name;
+                        }.bind(this));
                     }.bind(this));
                 });
-                schedule_db.loadDatabase((error) => {
-                    if (error !== null) console.error(error);
-                    schedule_db.find({
-                        id: id
-                    }, function(err, docs) {
-                        var days = this.$store.state.days;
-                        docs.forEach((doc) => {
-                            this.schedule_ids.push(doc._id);
-                            this.value.push(days[Number(this.zeroPadding(doc.repeat, 5).substr(0, 1))]);
-                        });
-                        if (docs.length == 7) {
-                            this.value.push("毎日");
-                        }
-                        var time = this.zeroPadding(docs[0].repeat, 5);
-                        this.time.HH = time.substr(1, 2);
-                        this.time.mm = time.substr(3, 2);
-                    }.bind(this));
-                });
+
             },
             changeCountUp() {
                 this.changeCount++;
@@ -307,9 +274,10 @@
         .title {
             display: flex;
             justify-content: center;
+            height:35px;
             font-size: 30px;
             flex-grow: 1;
-            line-height: 60px;
+            padding-top:10px;
         }
 
         form {
