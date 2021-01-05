@@ -53,11 +53,18 @@
                 var canvas = this.$refs.visualizer;
                 var canvasContext = canvas.getContext('2d');
                 canvasContext.transform(1, 0, 0, -1, 0, 255);
+                var textfile;
                 //var calum = this.sound_docs.filter((v) => v._id==id);
                 // var path = calum[0].path.replace(app.getPath('music'), '');
-                const textfile = fs.readFileSync(path, (err) => {
-                    if (err) throw err;
-                });
+                if(path){
+                   textfile = fs.readFileSync(path, (err) => {
+                        if (err) throw err;
+                    });
+                }else{
+                    textfile = fs.readFileSync('./public/sounds/default.mp3', (err) => {
+                        if (err) throw err;
+                    });
+                }
                 // const textfile = fs.readFileSync(app.getPath('music')+path, (err, data) => {
                 // if (err) throw err;
                 //     console.log(data);
@@ -65,10 +72,14 @@
                 var blob = new Blob([textfile]);
 
                 mm.parseBlob(blob).then(metadata => {
-                    var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
-                    this.src = "background-image:url(data:;base64," + j + ")";
-                    this.sound_title = metadata.common.title;
-                    this.sound_artist = metadata.common.artist;
+                    if(metadata.common.picture){
+                        var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
+                        this.src = "background-image:url(data:;base64," + j + ")";
+                        this.sound_title = metadata.common.title;
+                        this.sound_artist = metadata.common.artist;
+                    }else{
+                        this.src = 'background-color:gray';
+                    }
                 });
                 var toArrayBuffer = function(buf) {
                     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);

@@ -29,8 +29,6 @@ const store = new Vuex.Store({
     },
     mutations: {
         next_alarm_refresh(state, payload) {
-            console.log(payload.time);
-            console.log(payload.id);
             state.nextAlarmTime = payload.time;
             state.nextAlarmId = payload.id;
         },

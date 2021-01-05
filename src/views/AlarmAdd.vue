@@ -53,10 +53,6 @@
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
-    const sound_db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/sound.db'),
-        autoload: true
-    });
 
     export default {
         components: {
@@ -98,7 +94,6 @@
                 }
             },
             alarmAdd() {
-
                 //this.$emit('setCron', "a");
                // db.remove({}, { multi: true });
                 if (!this.is_empty(this.name) && !this.is_empty(this.time) && !this.is_empty(this.value) && !this.is_empty(this.sound_value)) {
@@ -158,7 +153,9 @@
                 }
             },
             getSoundData() {
-                sound_db.find({}, function(err, docs) {
+                db.find({
+                    type: "sound"
+                }, function(err, docs) {
                     docs.forEach((doc) => {
                         this.sound_options.push(doc.name);
                         this.sound_ids.push(doc._id);

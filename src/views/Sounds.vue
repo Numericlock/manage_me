@@ -43,7 +43,7 @@
                         </svg>
                     </td>
                     <td class="td-button">
-                        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+                        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" @click = "modal_open(sound._id)">
                             <g>
                                 <polygon class="st0" points="367.375,183.607 312.486,238.495 257.592,183.607 240.087,201.105 294.982,256 240.087,310.894 
 		257.592,328.393 312.486,273.498 367.375,328.393 384.88,310.894 329.985,256 384.88,201.105 	"></polygon>
@@ -60,11 +60,14 @@
                 </tr>
             </table>
         </div>
+        <AttentionModal @submit='sound_delete' ref="AttentionModal" v-bind:text="text"/>
     </div>
+
 </template>
 <script>
     import Vue from 'vue/dist/vue.esm.js';
     import sound from '../components/sound.vue';
+    import AttentionModal from '../components/AttentionModal.vue'
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
@@ -76,23 +79,24 @@
     });
     const mm = require('music-metadata-browser');
     export default {
-        name: 'Setting',
+        name: 'Sounds',
+        components: {
+            AttentionModal
+        },
         data() {
             return {
                 toggleText: "OFF",
                 file_name: null,
                 file_path: null,
                 sound_docs: [],
-                source: null
+                source: null,
+                text:"削除してもいいの？"
             }
         },
         methods: {
             toggle: function() {
-                if (this.toggleText == "OFF") {
-                    this.toggleText = "ON";
-                } else {
-                    this.toggleText = "OFF";
-                }
+                if (this.toggleText == "OFF") this.toggleText = "ON";
+                else this.toggleText = "OFF";
             },
             file_out: function(e) {
                 const files = e.target.files || e.dataTransfer.files;
@@ -119,6 +123,7 @@
                         //  var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
                         // src = "background-image:url(data:;base64," + j + ")";
                         console.log(metadata);
+                        console.log(this.file_path);
                         title = metadata.common.title;
                         artist = metadata.common.artist;
                         album = metadata.common.album;
@@ -127,15 +132,54 @@
                             "artist": artist,
                             "album": album,
                             "type": type,
-                            "path": this.file_path
+                            "path": this.file_path,
                         };
                         db.insert(dbData, (error, newDoc) => {
                             if (error !== null) console.error(error);
                             console.log(newDoc);
+                            this.getData();
                         });
                         // artist = metadata.common.artist;
                     });
                 }
+            },
+            sound_delete(...args){
+                db.loadDatabase((error) => {
+                    if (error !== null) console.error(error);
+                    var id = args[0];
+                    console.log(id);
+                    db.update({
+                        sound_id: id
+                    },{
+                        $set: {
+                            "sound_id": null
+                        }
+                    },{
+                        multi: true 
+                    },function(err, numReplaced) {
+                        if (err !== null) console.error(err);
+                        console.log('Replaced:', numReplaced);
+                    }.bind(this));
+                    db.find({
+                        type: "alarm"
+                    },function(err, docs) {
+                        console.log(docs);
+                        docs.forEach((doc) => {
+                            console.log(doc.name);
+                        });
+                    }.bind(this));
+                    db.remove({
+                        _id: id
+                    }, {
+                        multi: true
+                    }, function(err, numRemoved) {
+                        console.log(numRemoved);
+                        this.getData();
+                    }.bind(this));
+                });
+            },
+            modal_open(id){
+                this.$refs.AttentionModal.open(id);  
             },
             appendBox(name, path) {
                 var ComponentClass = Vue.extend(sound);
@@ -145,14 +189,10 @@
                         path: path
                     }
                 });
-
-                // console.log(sound);
                 instance.$mount();
-                //console.log(instance.$el);
                 document.getElementById('sounds-wrapper').appendChild(instance.$el)
             },
             getData: function() {
-                //var sounds = this;
                 var sound_docs = null;
                 //db.remove({type:"sound"}, { multi: true });
                 db.find({
@@ -176,9 +216,7 @@
                 var toArrayBuffer = function(buf) {
                     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
                 }
-                // console.log(textfile);
                 var audioContext = new AudioContext;
-                // var fileReader   = new FileReader;
                 var analyser = audioContext.createAnalyser();
                 analyser.fftSize = 128;
                 analyser.connect(audioContext.destination);

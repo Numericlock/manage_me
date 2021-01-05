@@ -58,7 +58,6 @@
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
-    console.log(app.getPath('userData'));
     const sound_db = new Datastore({
         filename: path.join(app.getPath('userData'), '/sound.db'),
         autoload: true
@@ -95,7 +94,8 @@
                 console.log("Run nextAlarm");
                 var dateNow = new Date();
                 var day = dateNow.getDay();
-                var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2));
+                var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2))+1;
+                console.log(calcNum);
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     db.find({
@@ -104,11 +104,9 @@
                     }, function(err, docs) {
                         var next_result = null;
                         var schedules = [];
-                        console.log(docs);
                         docs.forEach((doc) => {
                             var time = doc.time;
                             var weeks = doc.weeks;
-                            console.log(weeks);
                             for (var i = 0; i < weeks.length; i++) {
                                 schedules.push({
                                     "id": doc._id,
@@ -118,8 +116,6 @@
                                 });
                             }
                         });
-                        console.log(schedules);
-                        console.log(calcNum);
                         schedules.sort(function(a, b) {
                             var one = a.time - calcNum;
                             var two = b.time - calcNum;
@@ -127,12 +123,10 @@
                             else one = a.time - calcNum;
                             if (Math.sign(two) == -1) two = b.time - calcNum + 62359;
                             else two = b.time - calcNum;
-
                             if (one > two) return 1;
                             if (one < two) return -1;
                             return 0;
                         });
-                        console.log(schedules);
                         next_result = schedules[0];
                         if (!this.is_empty(next_result)) {
                             var strRepeat = this.zeroPadding(next_result.time, 5);
@@ -162,19 +156,24 @@
                     }, function(err, doc) {
                         this.title = doc.name;
                         var Vm2 = this;
-                        sound_db.findOne({
+                        db.findOne({
                             _id: doc.sound_id
                         }, function(err, doc) {
-                            Vm2.sound_path = doc.path;
-                            Vm2.sound_name = doc.name;
-                            Vm2.$refs.alarmModal.open(doc.path);
+                            if(doc){
+                                Vm2.sound_path = doc.path;
+                                Vm2.sound_name = doc.name;
+                                Vm2.$refs.alarmModal.open(doc.path,true);
+                            }else{
+                                Vm2.sound_path = '';
+                                Vm2.sound_name = '';
+                                Vm2.$refs.alarmModal.open(null,true);
+                            }
                         }.bind(Vm2));
                     }.bind(this));
                 });
                 this.nextAlarm();
             },
             openModal(...args){
-                console.log(args);
                 this.$refs.alarmModal.open(args[0],false);
                 
             }
@@ -191,7 +190,6 @@
                 }
             },
             next_alarm_time(val, old) {
-                console.log("watch:" + val);
                 var alarmTime = this.$store.state.nextAlarmTime;
                 var currentTime = this.$store.state.currentTime;
                 if (alarmTime != null && currentTime != null) {
