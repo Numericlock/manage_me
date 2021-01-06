@@ -24,7 +24,7 @@
                     Sound
                 </label>
                 <div>
-                    <multiselect v-model="sound_value" deselect-label="Can't remove this value" placeholder="１つ選択" :options="sound_options" :searchable="false" :allow-empty="false">
+                    <multiselect v-model="sound_value" deselect-label="Can't remove this value" placeholder="デフォルト" :options="sound_options" :searchable="false" :allow-empty="true">
                     </multiselect>
                 </div>
             </div>
@@ -96,14 +96,14 @@
             alarmAdd() {
                 //this.$emit('setCron', "a");
                // db.remove({}, { multi: true });
-                if (!this.is_empty(this.name) && !this.is_empty(this.time) && !this.is_empty(this.value) && !this.is_empty(this.sound_value)) {
-                    var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
+                if (!this.is_empty(this.name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                     var type = "alarm";
                     var time = String(this.time.HH) + String(this.time.mm);
                     var days = this.$store.state.days;
                     var weeks_string_array = this.value;
                     var weeks_array = [];
-                    var weeks;
+                    var weeks,sound_id;
+                    if(!this.is_empty(this.sound_value))sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
                     for (var i = 0; i < weeks_string_array.length; i++) {
                         if(weeks_string_array[i] != "毎日")weeks_array.push(days.indexOf(weeks_string_array[i]));
                     }

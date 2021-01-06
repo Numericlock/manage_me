@@ -25,10 +25,7 @@
         props: ['next_alarm_time'],
         data: function() {
             return {
-                time: null,
-                next_time: null,
-                db: null,
-                schedule_db: null
+                time: null
             }
         },
         computed: {
