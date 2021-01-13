@@ -41,6 +41,12 @@ export default {
         },
         zeroPadding: function (num, length) {
             return ('0000000000' + num).slice(-length);
-        }, // End of is_empty()
+        },
+        to_minutes: function (time) {
+            var result = (Number(time.substr(0, 1)) * 24 * 60) +
+                (Number(time.substr(1, 2)) * 60) +
+                Number(time.substr(3, 2));
+            return result;
+        }
     }
 }

@@ -58,10 +58,6 @@
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
-    const sound_db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/sound.db'),
-        autoload: true
-    });
     var date = new Date();
     var hour = date.getHours();
     var minutes = date.getHours();

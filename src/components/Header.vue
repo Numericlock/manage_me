@@ -1,5 +1,6 @@
 <template>
     <div class="header-wrapper">
+        <clock/>
         <div class="time-wrapper">
             <div class="time-now">
                 <span class="animate__animated animate__bounce">{{ message }}</span>
@@ -21,7 +22,11 @@
 </template>
 
 <script>
+    import clock from '../components/AnalogClock/AnalogClock.vue'
     export default {
+        components: {
+            clock
+        },
         props: ['next_alarm_time'],
         data: function() {
             return {
@@ -37,7 +42,7 @@
             refresh: function() {
                 var dateNow = new Date();
                 var dayOfWeekStr = this.$store.state.days[dateNow.getDay()];
-                var hours = ("0" + dateNow.getHours()).slice(-2);
+                var hours   = ("0" + dateNow.getHours()).slice(-2);
                 var minutes = ("0" + dateNow.getMinutes()).slice(-2);
                 var seconds = ("0" + dateNow.getSeconds()).slice(-2);
                 var currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
