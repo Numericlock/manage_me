@@ -7,10 +7,7 @@
             <div class="modal-content" v-show="isOpen">
                 <span class="title" v-if="isAlarm">{{ title }}</span>
                 <span class="time" v-if="isAlarm">{{ time }}</span>
-                <canvas id="visualizer" ref="visualizer" :style="src" height="255"></canvas>
-                <div>
-                    <span>{{ sound_artist }}</span><span class="sound-title">{{ sound_title }}</span>
-                </div>
+                <SoundAndVisualizer ref="SoundAndVisualizer" />
                 <div>
                     <button class="close-button" @click="close()">STOP</button>
                 </div>
@@ -20,9 +17,7 @@
 </template>
 
 <script>
-    const fs = window.fs;
-    const mm = require('music-metadata-browser');
-    var source, animationId;
+    import SoundAndVisualizer from '../components/SoundAndVisualizer.vue'
     export default {
         name: "Modal",
         props: ['title', 'time', 'sound_path', 'sound_name'],
@@ -30,97 +25,20 @@
             return {
                 isOpen: false,
                 isAlarm: true,
-                source: null,
-                src: null,
-                sound_title: null,
-                sound_artist: null
             };
         },
         methods: {
             open(path,is_alarm) {
-                this.isOpen = true;
-                this.sound(path);
+                this.$refs.SoundAndVisualizer.sound(path);
                 this.isAlarm = is_alarm;
             },
             close: function() {
-                if (source) {
-                    source.stop();
-                }
+                this.$refs.SoundAndVisualizer.close();
                 this.isOpen = false;
-            },
-            sound(path) {
-                var audioContext = new AudioContext;
-                var canvas = this.$refs.visualizer;
-                var canvasContext = canvas.getContext('2d');
-                canvasContext.transform(1, 0, 0, -1, 0, 255);
-                var textfile;
-                //var calum = this.sound_docs.filter((v) => v._id==id);
-                // var path = calum[0].path.replace(app.getPath('music'), '');
-                if(path){
-                   textfile = fs.readFileSync(path, (err) => {
-                        if (err) throw err;
-                    });
-                }else{
-                    textfile = fs.readFileSync('./public/sounds/default.mp3', (err) => {
-                        if (err) throw err;
-                    });
-                }
-                // const textfile = fs.readFileSync(app.getPath('music')+path, (err, data) => {
-                // if (err) throw err;
-                //     console.log(data);
-                // });
-                var blob = new Blob([textfile]);
-
-                mm.parseBlob(blob).then(metadata => {
-                    if(metadata.common.picture){
-                        var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
-                        this.src = "background-image:url(data:;base64," + j + ")";
-                        this.sound_title = metadata.common.title;
-                        this.sound_artist = metadata.common.artist;
-                    }else{
-                        this.src = 'background-color:gray';
-                    }
-                });
-                var toArrayBuffer = function(buf) {
-                    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-                }
-                var analyser = audioContext.createAnalyser();
-                analyser.fftSize = 512;
-                analyser.connect(audioContext.destination);
-
-                audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer) {
-                    if (source) {
-                        source.stop();
-                        cancelAnimationFrame(animationId);
-                    }
-
-                    source = audioContext.createBufferSource();
-
-                    source.buffer = buffer;
-                    source.loop = true;
-                    source.connect(analyser);
-                    source.start(0);
-
-                    animationId = requestAnimationFrame(render);
-                });
-
-                var render = function() {
-                    var spectrums = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(spectrums);
-
-                    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-                    for (var i = 0, len = spectrums.length; i < len; i++) {
-                        canvasContext.fillRect(i * 10, 0, 5, spectrums[i] / 2);
-                        canvasContext.fillStyle = "orange";
-                    }
-
-                    animationId = requestAnimationFrame(render);
-                };
             }
         },
-        watch: {
-
-
+        components: {
+            SoundAndVisualizer
         }
     };
 

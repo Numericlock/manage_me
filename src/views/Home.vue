@@ -1,5 +1,11 @@
 <template>
     <div class="home-wrapper">
+        <router-link class="alarm-add-button" to="/alarm/add">
+            <addButton/>
+        </router-link>
+        <div class="clock-wrapper">
+            <clock/>
+        </div>
         <div class="aleam-lists">
             <div v-for="(alarm, key) in alarm_data" :key="key" class="aleam">
                 <router-link class="alarm-router" v-bind:to="{name: 'alarm.detail', params: {alarmId: alarm._id}}">
@@ -28,16 +34,21 @@
 </template>
 
 <script>
+    import clock from '../components/AnalogClock24/AnalogClock.vue'
+    import addButton from '../components/DotPlusButton.vue'
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
     const db = new Datastore({
         filename: path.join(app.getPath('userData'), '/alarm.db'),
-        //filename: '../data.db',
         autoload: true
     });
     export default {
         name: 'Home',
+        components: {
+            clock,
+            addButton
+        },
         props: ['next_alarm_time'],
         data() {
             return {
@@ -116,13 +127,20 @@
 
 <style lang="scss">
     a:link {
-        color: #333;
+        color: white;
         text-decoration: none;
     }
-
-    .alarm-router {
+    
+    .alarm-add-button{
+        position: absolute;
+        top:15px;
+        left:15px;
+    }
+    
+    .clock-wrapper{
         display: flex;
-        flex-grow: 6;
+        justify-content: center;
+        padding: 20px 0px;
     }
 
     /*スクロールバーの横幅指定*/
@@ -139,43 +157,49 @@
     /*スクロールバーの色・角丸指定*/
     .aleam-lists::-webkit-scrollbar-thumb {
         border-radius: 10px;
-        background: #09C9D9;
+        background: rgba( 62, 62, 62, 0.50 );
     }
 
     .home-wrapper {
         display: flex;
         flex-direction: column;
-    }
-
-    .aleam-lists {
-        display: flex;
-        flex-direction: column;
-        height: 400px;
-        overflow-y: scroll;
-    }
-
-    .aleam {
-        display: flex;
-        flex-direction: row;
-        height: 50px;
-        border-bottom: 1px ridge black;
-    }
-
-    .aleam-time {
-        flex-grow: 3;
-        padding-left: 30px;
-        line-height: 50px;
-    }
-
-    .aleam-sound {
-        flex-grow: 3;
-        line-height: 50px;
-        font-size: 20px;
-        font-weight: 900;
-    }
-
-    .aleam-istrue-button {
-        line-height: 50px;
+        .aleam-lists {
+            display: flex;
+            flex-direction: column;
+            overflow-y: scroll;
+            color:white;
+            height:150px;
+            background: rgba( 62, 62, 62, 0.50 );
+            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+            backdrop-filter: blur( 5.0px );
+            -webkit-backdrop-filter: blur( 5.0px );
+            border-radius: 10px;
+            border: 1px solid rgba( 255, 255, 255, 0.18 );
+            .aleam {
+                display: flex;
+                flex-direction: row;
+                height: 50px;
+                border-bottom: 1px solid rgba( 255, 255, 255, 0.18 );
+                .alarm-router {
+                    display: flex;
+                    flex-grow: 6;
+                    .aleam-time {
+                        flex-grow: 3;
+                        padding-left: 30px;
+                        line-height: 50px;
+                    }
+                    .aleam-sound {
+                        flex-grow: 3;
+                        line-height: 50px;
+                        font-size: 20px;
+                        font-weight: 900;
+                    }
+                }
+                .aleam-istrue-button {
+                    line-height: 50px;
+                }
+            }
+        }
     }
 
     .block input {
@@ -203,7 +227,7 @@
         height: 30px;
         margin-top: 10px;
         box-sizing: border-box;
-        border: 3px solid;
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
         float: left;
         border-radius: 100px;
         position: relative;
@@ -212,10 +236,15 @@
     }
 
     input[type=checkbox]:checked+label {
-        background: #55e868;
+        background: rgba( 0, 149, 70, 0.60 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 4px );
+        -webkit-backdrop-filter: blur( 4px );
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
     }
 
     input[type=checkbox]:checked+label:before {
+        top:4px;
         left: 23px;
     }
 
@@ -225,13 +254,15 @@
         width: 20px;
         height: 20px;
         position: absolute;
-        background: white;
-        left: 2px;
-        top: 2px;
+        left: 4px;
+        top: 4px;
         box-sizing: border-box;
-        border: 3px solid;
-        color: black;
         border-radius: 100px;
+        background: rgba( 255, 255, 255, 0.80 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 4px );
+        -webkit-backdrop-filter: blur( 4px );
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
     }
 
     .initial-text-area {

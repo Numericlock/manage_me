@@ -11,7 +11,7 @@
         </div>
         <div 
             v-for="n in 24" 
-            :key="n"
+            :key="`number-${n}`"
             :style="{
                 'top':top(n*2.5) + 'px',
                 'left': left(n*2.5) + 'px',
@@ -53,6 +53,11 @@ export default {
 
     height: 300px;
     width: 300px;
+    background: rgba( 62, 62, 62, 0.50 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    backdrop-filter: blur( 5.0px );
+    -webkit-backdrop-filter: blur( 5.0px );
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
 }
 
 .scale {

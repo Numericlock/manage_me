@@ -1,57 +1,21 @@
 <template>
     <div class="wrapper">
         <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:sound_name="sound_name" />
-        <Header ref="nextAlarm2" v-bind:next_alarm_time="next_alarm_time" />
+        <!--<Header ref="nextAlarm2" v-bind:next_alarm_time="next_alarm_time" />-->
+        
         <div class="content">
             <transition name="costom-transition" :enter-active-class="transition.enter" :leave-active-class="transition.leave">
                 <router-view @nextAlarm='nextAlarm()' @openModal='openModal' v-bind:next_alarm_time="next_alarm_time" />
             </transition>
         </div>
-        <div class="tabbar ">
-            <router-link class="tabbar-icon-wrapper" to="/">
-                <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
-                    <g>
-                        <path class="st0" d="M392.859,6.031L123.288,66.938l0.91,1.692l-0.782-0.51L0,256.273l26.488,17.374l4.457-6.804v139.261
-                        l254.107,99.866l209.756-104.105V228.575L512,221.753L392.859,6.031z M270.335,466.165l-91.76-36.065V325.503l-62.872-18.629v98.51
-                        l-53.085-20.866V218.561l78.208-119.232l120.232,221.945l3.856-1.519l5.421-2.147V466.165z M463.136,382.226l-164.858,81.829
-                        V306.52l164.858-65.383V382.226z"></path>
-                    </g>
-                </svg>
-            </router-link>
-            <router-link class="tabbar-icon-wrapper" to="/sounds">
-                <svg version="1.1" viewBox="0 0 512 512"  xml:space="preserve">
-                    <g>
-                        <path class="st0" d="M134.75,0v307.684c-14.347-2.241-29.784-1.552-45.222,3.303c-46.227,14.534-73.715,58.046-61.393,97.194
-                        c12.307,39.063,59.771,58.996,105.984,44.462c35.443-11.144,62.887-39.349,66.822-69.478V117.602l219.68,41.776v202.82
-                        c-14.06-2.068-29.154-1.35-44.218,3.403c-46.227,14.578-73.715,58.09-61.393,97.153c12.294,39.133,59.756,59.024,105.983,44.49
-                        c36.751-11.575,63.361-41.504,65.816-72.898V60.676L134.75,0z"></path>
-                    </g>
-                </svg>
-            </router-link>
-            <router-link class="tabbar-icon-wrapper" to="/setting">
-                <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
-                    <g>
-                        <rect x="424" y="24" class="st0" width="48" height="52"></rect>
-                        <rect x="424" y="188" class="st0" width="48" height="300"></rect>
-                        <rect x="384" y="100" class="st0" width="128" height="64"></rect>
-                        <rect x="231.985" y="24" class="st0" width="48" height="276.641"></rect>
-                        <rect x="231.985" y="412.641" class="st0" width="48" height="75.359"></rect>
-                        <rect x="191.985" y="324.641" class="st0" width="128" height="64"></rect>
-                        <rect x="40" y="308" class="st0" width="48" height="180"></rect>
-                        <rect x="40" y="24" class="st0" width="48" height="172"></rect>
-                        <rect y="220" class="st0" width="128" height="64"></rect>
-                    </g>
-                </svg>
-            </router-link>
-        </div>
+        <Tabbar v-bind:carrentPage="carrentPage" />
     </div>
 </template>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.2/dist/sql-wasm.js'></script>
 <script>
-    import Header from './components/Header.vue'
     import AlarmModal from './components/Modal.vue'
+    import Tabbar from './components/Tabbar.vue'
     const app = window.app;
-    const cron = require('node-cron');
     var Datastore = require('nedb');
     var path = require('path');
     const db = new Datastore({
@@ -64,8 +28,8 @@
     export default {
         name: 'app',
         components: {
-            Header,
-            AlarmModal
+            AlarmModal,
+            Tabbar
         },
         data() {
             return {
@@ -78,6 +42,7 @@
                 sound_path: null,
                 sound_name: null,
                 alarm: null,
+                carrentPage: "Home"
             };
         },
         computed: {
@@ -177,6 +142,8 @@
         watch: {
             $route(to, from) {
                 // アニメーションの切り替え
+                this.carrentPage = to.name;
+                console.log(to.name);
                 if (to.meta.index == 7 || to.meta.index == 8) {
                     this.transition.enter = 'animate__animated animate__fadeIn';
                 } else if (to.meta.index > from.meta.index) {
@@ -240,35 +207,16 @@
         display: flex;
         flex-direction: column;
         font-weight: bolder;
+        background: linear-gradient(-135deg, #E4A972, #9941D8),
+        linear-gradient(75deg, #E4A972, #9941D8 ,#79ffff)fixed;
+        border-radius: 15px;
+        padding:0px 10px;
     }
 
     .content {
-        height: 400px;
-        max-height: 400px;
+        height: 500px;
+        max-height: 500px;
         float: left;
-    }
-
-    .tabbar {
-        height: 50px;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-    }
-
-    .tabbar-icon-wrapper {
-        line-height: 50px;
-    }
-
-    .tabbar-icon-wrapper svg {
-        width: 40px;
-        height: 40px;
-        vertical-align: middle;
-        fill: rgb(75, 75, 75);
-
-    }
-
-    .tabbar-icon-wrapper svg:hover {
-        fill: red;
     }
 
     .animate__animated {

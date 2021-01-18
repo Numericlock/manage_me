@@ -1,6 +1,6 @@
 <template>
     <div class="dials">
-       <div 
+        <div 
             v-for="n in 60" 
             :key="n"
             :style="{
@@ -8,19 +8,9 @@
                 'left': left(n) + 'px',
                 'transform': 'rotate(' + rotate(n) + 'deg)'}"
             :class="['scale', {'fifth': n % 5 == 0}]">
-        </div>
-        <div 
-            v-for="n in 24" 
-            :key="n"
-            :style="{
-                'top':top(n*2.5) + 'px',
-                'left': left(n*2.5) + 'px',
-                'transform': 'rotate(' + rotate(n*2.5) + 'deg)'}"
-            class="number-foundation">
-            <p 
-               :style="{'transform': 'rotate(' + -rotate(n*2.5) + 'deg)'}"
-               :class="['number', {'three': n % 3 == 0},{'six': n % 6 == 0}]">
-                {{ number(n) }}
+            <p v-if="n % 5 == 0" 
+               :style="{'transform': 'rotate(' + -rotate(n) + 'deg)'}">
+                {{ n / 5 }}
             </p>
         </div>
     </div>
@@ -39,14 +29,7 @@ export default {
 
         rotate(val) {
             return 6 * val
-        },
-        
-        number(n) {
-            let num;
-            if(n <= 12) num = n;
-            else num = n-12;
-            return num;
-        } 
+        }
     }
 }
 </script>
@@ -54,7 +37,6 @@ export default {
 <style scoped>
 .dials {
     background-color: #333;
-    background:linear-gradient(270deg, #f0bc68 0%, #f0bc68 50%, #c4d7d1 50%, #c4d7d1 100%);
     border-radius: 300px;
 
     position: relative;
@@ -64,7 +46,7 @@ export default {
 }
 
 .scale {
-    background-color: black;
+    background-color: white;
 
     position: absolute;
 
@@ -74,36 +56,21 @@ export default {
     transform-origin: left top;
 
 }
-    
-.number-foundation {
-    position: absolute;
-    transform-origin: left top;
-
-}
 
 .fifth {
-    width: 3px;
-    height: 15px;
+    width: 5px;
+    height: 20px;
 }
 
-.number{
+.fifth p {
     margin-top: 20px;
     margin-left: -15px;
 
-    color: black;
-    font-size: 18px;
+    color: white;
+    font-size: 28px;
     font-weight: bold;
     text-align: center;
 
     width: 35px;
 }
-    
-    .three {
-        font-size: 22px;
-    }
-    
-    .six{
-        font-size: 22px;
-        color:red;
-    }
 </style>

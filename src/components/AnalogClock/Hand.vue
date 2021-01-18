@@ -3,12 +3,12 @@
 </template>
 
 <script>
-export default {
-    props: [
-        'rotate',
-        'type'
-    ],
-}
+    export default {
+        props: [
+            'rotate',
+            'type'
+        ],
+    }
 </script>
 
 <style scoped>

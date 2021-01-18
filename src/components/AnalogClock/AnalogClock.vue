@@ -41,18 +41,17 @@ export default {
 
         hours() {
             let hh = moment(this.time).hours();
-            return 30 * ((hh + this.minutes / 360)/2);
+            return 30 * (hh + this.minutes / 360);
         },
         
         alarm_minutes() {
-            
             let mm = Number(this.$store.state.nextAlarmTime.substr(3,2));
             return 6 * mm;
         },
         
         alarm_hours(){
             let hh = Number(this.$store.state.nextAlarmTime.substr(1,2));
-            return 30 * ((hh + this.alarm_minutes / 360)/2);
+            return 30 * (hh + this.alarm_minutes / 360);
         },
         next_alarm_time() {
             return this.$store.getters.nextTime;

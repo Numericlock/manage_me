@@ -1,27 +1,14 @@
 <template>
     <div class="sounds-setting-wrapper">
-        <div class="title">
-            <span>Sounds</span>
-        </div>
-        <div class="settings">
-            <div class="input-wrapper">
-                <label>
-                    Add sound
-                </label>
-                <div class="sound-input">
-                    <div class="uploadButton">
-                        ファイルを選択
-                        <input type="file" id="file" onchange="uv.style.display='inline-block'; uv.value = this.value;" v-on:change="file_out" />
-                        <input type="text" id="uv" class="uploadValue" disabled />
-                    </div>
-                    <button v-on:click="sound_register">追加</button>
-                </div>
+        <div class="add-button-wrapper">
+            <div @click="begin_file_input">
+                <DotSoundAddButton />
+                <input type="file" id="file" onchange="uv.style.display='inline-block'; uv.value = this.value;" v-on:change="file_out" />
             </div>
         </div>
-        <!--<div class="sounds-wrapper" id="sounds-wrapper">
-            <div v-for="(sound, key) in sound_docs" :key="key" class="sound"><span class="sound-name">{{ sound.name }}</span><span v-on:click="sound_start(sound._id)" class="start">再生</span><span v-on:click="sound_stop" class="stop">stop</span><span class="delete">delete</span></div>
-        </div>-->
         <div class="sounds-wrapper" id="sounds-wrapper">
+            <SoundAndVisualizer ref="SoundAndVisualizer" />
+            <button @click="close">STOP</button>
             <table>
                 <tr>
                     <th>Artist</th>
@@ -33,7 +20,7 @@
                     <td>{{ sound.name }}</td>
                     <td>{{ sound.album }}</td>
                     <td class="td-button">
-                        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" @click = "sound_music_on_modal(sound.path)">
+                        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" @click = "open(sound.path)">
                             <g>
                                 <path class="st0" d="M256,0C114.625,0,0,114.625,0,256c0,141.374,114.625,256,256,256c141.374,0,256-114.626,256-256
 		C512,114.625,397.374,0,256,0z M351.062,258.898l-144,85.945c-1.031,0.626-2.344,0.657-3.406,0.031
@@ -62,12 +49,13 @@
         </div>
         <AttentionModal @submit='sound_delete' ref="AttentionModal" v-bind:text="text"/>
     </div>
-
 </template>
 <script>
     import Vue from 'vue/dist/vue.esm.js';
+    import SoundAndVisualizer from '../components/SoundAndVisualizer.vue'
     import sound from '../components/sound.vue';
     import AttentionModal from '../components/AttentionModal.vue'
+    import DotSoundAddButton from '../components/DotSoundAddButton.vue'
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
@@ -81,7 +69,9 @@
     export default {
         name: 'Sounds',
         components: {
-            AttentionModal
+            AttentionModal,
+            DotSoundAddButton,
+            SoundAndVisualizer
         },
         data() {
             return {
@@ -103,10 +93,20 @@
                 this.file_name = files[0].name;
                 this.file_path = files[0].path;
                 // fileReader.readAsArrayBuffer(e.target.files[0]);
+                this.sound_register();
+            },
+            begin_file_input(){
+                    document.getElementById("file").click();
             },
             sound_music_on_modal(path){
                 console.log("modalmodal"+path);
                 this.$emit('openModal',path);
+            },
+            open(path) {
+                this.$refs.SoundAndVisualizer.sound(path);
+            },
+            close: function() {
+                this.$refs.SoundAndVisualizer.kill();
             },
             sound_register: function() {
                 if (this.file_path) {
@@ -242,11 +242,30 @@
 
 </script>
 <style lang="scss">
+    .add-button-wrapper{
+        position: absolute;
+        top:15px;
+        left:15px;
+        div{
+            position: relative;
+            input[type=file] {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display:none;
+                border-radius:100%;
+
+            }   
+        }
+    }
     .sounds-setting-wrapper {
         display: flex;
         flex-direction: column;
         justify-content: space-around;
         height: 100%;
+        padding: 20px 0px;
 
         .title {
             display: flex;
@@ -400,7 +419,10 @@
         }
 
         .sounds-wrapper {
+            display: flex;
             flex-direction: column;
+            justify-content: space-around;
+            align-items:center;
             height: 100%;
             width: 100%;
             overflow-y: auto;
