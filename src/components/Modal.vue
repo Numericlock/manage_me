@@ -15,7 +15,6 @@
         </transition>
     </div>
 </template>
-
 <script>
     import SoundAndVisualizer from '../components/SoundAndVisualizer.vue'
     export default {
@@ -43,7 +42,7 @@
     };
 
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
     .modal {
         position: fixed;
         top: 0;

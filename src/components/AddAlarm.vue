@@ -1,51 +1,57 @@
 <template>
-    <div class="aleam-add-wrapper">
-        <div class="title">
-            <span>New Aleam</span>
+    <div v-show="display">
+        <div @click="displayControl(false)">
+            <ModalBackground transparency="0.1"/>
         </div>
-        <form>
-            <div class="input-wrapper">
-                <label>
-                    Name
-                </label>
-                <input type="text" class="alarm-input" id="aleamName" placeholder="アラーム名" v-model="name">
+        <div class="aleam-add-wrapper">
+            <div class="title">
+                <span>New Aleam</span>
             </div>
-            <div class="input-wrapper">
-                <label>
-                    Repeat
-                </label>
-                <div>
-                    <multiselect v-model="value" :value="value" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="複数選択" @select="onSelect" @remove="onRemove">
-                    </multiselect>
+            <form>
+                <div class="input-wrapper">
+                    <label>
+                        Name
+                    </label>
+                    <input type="text" class="alarm-input" id="aleamName" placeholder="アラーム名" v-model="name">
                 </div>
-            </div>
-            <div class="input-wrapper">
-                <label>
-                    Sound
-                </label>
-                <div>
-                    <multiselect v-model="sound_value" deselect-label="Can't remove this value" placeholder="デフォルト" :options="sound_options" :searchable="false" :allow-empty="true">
-                    </multiselect>
+                <div class="input-wrapper">
+                    <label>
+                        Repeat
+                    </label>
+                    <div>
+                        <multiselect v-model="value" :value="value" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="複数選択" @select="onSelect" @remove="onRemove">
+                        </multiselect>
+                    </div>
                 </div>
-            </div>
-            <div class="input-wrapper">
-                <label>
-                    Time
-                </label>
-                <div>
-                    <vue-timepicker v-model="time" id="timepicker" placeholder="時間を入力" hide-disabled-hours hide-disabled-minutes hide-clear-button></vue-timepicker>
+                <div class="input-wrapper">
+                    <label>
+                        Sound
+                    </label>
+                    <div>
+                        <multiselect v-model="sound_value" deselect-label="Can't remove this value" placeholder="デフォルト" :options="sound_options" :searchable="false" :allow-empty="true">
+                        </multiselect>
+                    </div>
                 </div>
-            </div>
-            <div class="submit-wrapper">
-                <span v-on:click="alarmAdd">作成</span>
-            </div>
-        </form>
+                <div class="input-wrapper">
+                    <label>
+                        Time
+                    </label>
+                    <div>
+                        <vue-timepicker v-model="time" id="timepicker" placeholder="時間を入力" hide-disabled-hours hide-disabled-minutes hide-clear-button></vue-timepicker>
+                    </div>
+                </div>
+                <div class="submit-wrapper">
+                    <span @click="alarmAdd">作成</span>
+                </div>
+            </form>
+        </div>
     </div>
 </template>
 <script>
     import Multiselect from 'vue-multiselect'
     import VueTimepicker from 'vue2-timepicker'
     import 'vue2-timepicker/dist/VueTimepicker.css'
+    import ModalBackground from './ModalBackground'
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
@@ -57,7 +63,8 @@
     export default {
         components: {
             'vue-timepicker': VueTimepicker,
-            Multiselect
+            Multiselect,
+            ModalBackground
         },
         data(){
             return {
@@ -73,7 +80,8 @@
                 sound_options: [],
                 sound_data: [],
                 sound_ids: [],
-                is_enable: true //alarmの初期値
+                is_enable: true, //alarmの初期値
+                display: false
             }
         },
         methods: {
@@ -92,6 +100,9 @@
                 } else if (value.indexOf('毎日') != -1) {
                     this.value.splice(value.indexOf('毎日'), 1);
                 }
+            },
+            displayControl( bool ){
+              this.display = bool;  
             },
             alarmAdd() {
                 //this.$emit('setCron', "a");
@@ -144,10 +155,10 @@
                             id: newDoc._id
                         });
                         // this.nextAlarm();
+                        this.$emit('run');
                     }.bind(this));
                     //this.$emit('nextAlarm');
-                    //this.$emit('run');
-
+                    this.displayControl(false);
                 } else {
                     console.log("value is empty");
                 }
@@ -170,13 +181,24 @@
     }
 
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
     .aleam-add-wrapper {
         display: flex;
         flex-direction: column;
         justify-content: space-around;
-        height: 100%;
-        
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index:2000;
+        color:white;
+        background: rgba( 62, 62, 62, 0.50 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 5.0px );
+        -webkit-backdrop-filter: blur( 5.0px );
+        border-radius: 10px;
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
+
         .title {
             display: flex;
             justify-content: center;
@@ -310,6 +332,15 @@
             }
         }
     }
+    .fade-enter-active,
+    .fade-leave-active {
+        will-change: opacity;
+        transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    }
 
+    .fade-enter,
+    .fade-leave-to {
+        opacity: 0
+    }
 </style>
 <style src="vue-multiselect/dist/vue-multiselect.min.css">

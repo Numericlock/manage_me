@@ -1,14 +1,20 @@
 <template>
     <div class="home-wrapper">
-        <router-link class="alarm-add-button" to="/alarm/add">
-            <addButton/>
+       <!-- <router-link class="alarm-add-button" to="/alarm/add">
+            <addButton @click="addAlarmModal"/>
         </router-link>
+        -->
+        <div class="alarm-add-button" @click="addAlarmModal">
+            <addButton />
+        </div>
+        <AddAlarm ref="AddAlarm" @run="getData"/>
+        <AlarmDetail ref="AlarmDetail" @run="getData"/>
         <div class="clock-wrapper">
             <clock/>
         </div>
         <div class="aleam-lists">
             <div v-for="(alarm, key) in alarm_data" :key="key" class="aleam">
-                <router-link class="alarm-router" v-bind:to="{name: 'alarm.detail', params: {alarmId: alarm._id}}">
+                <div class="alarm-router" @click="alarmDetailModal(alarm._id)">
 
                     <div class="aleam-time">
                         <span>{{alarm.weeksString}}</span>
@@ -17,7 +23,7 @@
                     <div class="aleam-sound">
                         <span>{{alarm.name}}</span>
                     </div>
-                </router-link>
+                </div>
                 <div class="block aleam-istrue-button">
                     <input data-index=alarm._id :id=alarm._id @click=toggleChange(alarm._id,alarm.isEnable) v-model=alarm.isEnable type="checkbox" />
                     <label :for=alarm._id></label>
@@ -36,6 +42,8 @@
 <script>
     import clock from '../components/AnalogClock24/AnalogClock.vue'
     import addButton from '../components/DotPlusButton.vue'
+    import AddAlarm from '../components/AddAlarm.vue'
+    import AlarmDetail from '../components/AlarmDetail.vue'
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
@@ -47,12 +55,15 @@
         name: 'Home',
         components: {
             clock,
-            addButton
+            addButton,
+            AddAlarm,
+            AlarmDetail
         },
         props: ['next_alarm_time'],
         data() {
             return {
-                alarm_data: []
+                alarm_data: [],
+                add_alarm:false
             }
         },
         computed: {
@@ -64,6 +75,7 @@
         },
         methods: {
             getData: function() {
+                console.log("getData");
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                 });
@@ -96,6 +108,7 @@
                         count: numOfDocs
                     });
                 });
+                this.$emit('nextAlarm');
             },
             toggleChange(id, isEnable) {
                 db.loadDatabase((error) => {
@@ -115,6 +128,14 @@
                         this.$emit('nextAlarm');
                     }.bind(this));
                 });
+            },
+            addAlarmModal(){
+                this.$refs.AddAlarm.displayControl(true);
+            },
+            alarmDetailModal(id){
+                this.$refs.AlarmDetail.setId(id);
+                this.$refs.AlarmDetail.getAlarmData(id);
+                this.$refs.AlarmDetail.displayControl(true);
             }
         },
         created() {

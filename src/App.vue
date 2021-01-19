@@ -47,7 +47,7 @@
         },
         computed: {
             next_alarm_time() {
-                return this.$store.getters.nextTime
+                return this.$store.getters.nextTime;
             }
         },
         methods: {
