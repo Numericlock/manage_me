@@ -7,8 +7,9 @@
         <div class="alarm-add-button" @click="addAlarmModal">
             <addButton />
         </div>
-        <AddAlarm ref="AddAlarm" @run="getData"/>
-        <AlarmDetail ref="AlarmDetail" @run="getData"/>
+       <!-- <AddAlarm ref="AddAlarm" @run="getData"/>-->
+       <!-- <AlarmDetail ref="AlarmDetail" @run="getData"/>-->
+        <EditAlarm ref="EditAlarm" @run="getData" :state="this.modal_type"/>
         <div class="clock-wrapper">
             <clock/>
         </div>
@@ -42,8 +43,9 @@
 <script>
     import clock from '../components/AnalogClock24/AnalogClock.vue'
     import addButton from '../components/DotPlusButton.vue'
-    import AddAlarm from '../components/AddAlarm.vue'
-    import AlarmDetail from '../components/AlarmDetail.vue'
+   // import AddAlarm from '../components/AddAlarm.vue'
+   // import AlarmDetail from '../components/AlarmDetail.vue'
+    import EditAlarm from '../components/EditAlarm.vue'
     const app = window.app;
     var Datastore = require('nedb');
     var path = require('path');
@@ -56,14 +58,16 @@
         components: {
             clock,
             addButton,
-            AddAlarm,
-            AlarmDetail
+          //  AddAlarm,
+          //  AlarmDetail,
+            EditAlarm
         },
         props: ['next_alarm_time'],
         data() {
             return {
                 alarm_data: [],
-                add_alarm:false
+                add_alarm:false,
+                modal_type:null,
             }
         },
         computed: {
@@ -130,12 +134,15 @@
                 });
             },
             addAlarmModal(){
-                this.$refs.AddAlarm.displayControl(true);
+                this.modal_type = 'add';
+                this.$refs.EditAlarm.initialize();
+                this.$refs.EditAlarm.displayControl(true);
             },
             alarmDetailModal(id){
-                this.$refs.AlarmDetail.setId(id);
-                this.$refs.AlarmDetail.getAlarmData(id);
-                this.$refs.AlarmDetail.displayControl(true);
+                this.modal_type = 'edit';
+                this.$refs.EditAlarm.setId(id);
+                this.$refs.EditAlarm.getAlarmData(id);
+                this.$refs.EditAlarm.displayControl(true);
             }
         },
         created() {
