@@ -110,7 +110,7 @@
                 this.value = [];
                 this.sound_value = [];
                 
-                this.alarm_id = null;
+                
                 this.is_mounted = false;
                 this.is_change = false;
             },
@@ -188,6 +188,7 @@
             },
             
             updateAlarm: function() {
+                console.log(this.time.mm);
                 if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                     var id = this.alarm_id;
                     var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];

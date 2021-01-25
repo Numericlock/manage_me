@@ -1,13 +1,11 @@
 <template>
-    <div>
+    <div v-show="display">
+        <ModalBackground transparency="0.1"/>
         <transition name="fade">
-            <div class="modal" v-if="isOpen"></div>
-        </transition>
-        <transition name="fade">
-            <div class="modal-content" v-show="isOpen">
+            <div class="modal-content" v-show="display">
                 <span class="title" v-if="isAlarm">{{ title }}</span>
                 <span class="time" v-if="isAlarm">{{ time }}</span>
-                <SoundAndVisualizer ref="SoundAndVisualizer" />
+                <SoundAndVisualizer ref="SoundAndVisualizer" :hide_playback_button=true />
                 <div>
                     <button class="close-button" @click="close()">STOP</button>
                 </div>
@@ -16,13 +14,14 @@
     </div>
 </template>
 <script>
-    import SoundAndVisualizer from '../components/SoundAndVisualizer.vue'
+    import SoundAndVisualizer from './SoundAndVisualizer.vue'
+    import ModalBackground from './ModalBackground.vue'
     export default {
         name: "Modal",
         props: ['title', 'time', 'sound_path', 'sound_name'],
         data: function() {
             return {
-                isOpen: false,
+                display: false,
                 isAlarm: true,
             };
         },
@@ -30,14 +29,19 @@
             open(path,is_alarm) {
                 this.$refs.SoundAndVisualizer.sound(path);
                 this.isAlarm = is_alarm;
+                this.displayControl(true);
             },
             close: function() {
                 this.$refs.SoundAndVisualizer.close();
-                this.isOpen = false;
+                this.displayControl(false);
+            },
+            displayControl( bool ){
+                this.display = bool;  
             }
         },
         components: {
-            SoundAndVisualizer
+            SoundAndVisualizer,
+            ModalBackground
         }
     };
 
@@ -65,11 +69,14 @@
         padding: 30px;
         height: 400px;
         width: 300px;
-        border-radius: 5px;
-        box-shadow: 0px 0px 10px #f00;
-        background-color: white;
         z-index: 11200;
-
+        color:white;
+        background: rgba( 62, 62, 62, 0.50 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 5.0px );
+        -webkit-backdrop-filter: blur( 5.0px );
+        border-radius: 10px;
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
         canvas {
             background-size: cover;
             border-radius: 15px;

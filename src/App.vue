@@ -22,9 +22,6 @@
         filename: path.join(app.getPath('userData'), '/alarm.db'),
         autoload: true
     });
-    var date = new Date();
-    var hour = date.getHours();
-    var minutes = date.getHours();
     export default {
         name: 'app',
         components: {
@@ -153,8 +150,16 @@
                 }
             },
             next_alarm_time(val, old) {
+                console.log("うごいてるよ");
                 var alarmTime = this.$store.state.nextAlarmTime;
-                var currentTime = this.$store.state.currentTime;
+                var dateNow = new Date();
+                var dayOfWeekStr = this.$store.state.days[dateNow.getDay()];
+                var hours   = ("0" + dateNow.getHours()).slice(-2);
+                var minutes = ("0" + dateNow.getMinutes()).slice(-2);
+                var seconds = ("0" + dateNow.getSeconds()).slice(-2);
+                var currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
+                console.log("alarmTime"+alarmTime);
+                console.log("currentTime"+currentTime);
                 if (alarmTime != null && currentTime != null) {
                     var alarmSeconds = to_minutes(alarmTime) * 60;
                     var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
@@ -172,6 +177,7 @@
                     } else if (alarmSeconds < currentSeconds) {
                         interval = ((sevenDaysSeconds - currentSeconds) + alarmSeconds) * 1000;
                     }
+                    console.log(interval);
                     clearTimeout(this.alarm);
                     this.alarm = setTimeout(this.openAlarm, interval);
                 }

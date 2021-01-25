@@ -10,7 +10,7 @@
         <div>
             <span>{{ sound_artist }}</span><span class="sound-title">{{ sound_title }}</span>
         </div>
-        <div>
+        <div v-if="hide_playback_button==false">
             <div :class="['playback' ,{'pause': playbackNow}]" @click="suspend()"></div>
         </div>
     </div>
@@ -26,6 +26,11 @@
         components: {
             LoadingAnimation
         },
+        props:{
+            hide_playback_button:{
+                default:false,
+            }
+        },
         data: function() {
             return {
                 loading: false,
@@ -40,6 +45,7 @@
                 if(this.playbackNow)this.playbackNow = false;
                 else this.playbackNow = true;
             },
+            
             close(){ //音声再生終了
                 if (source) {
                     source.stop();
