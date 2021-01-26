@@ -21,7 +21,7 @@
         props: ['title', 'time', 'sound_path', 'sound_name'],
         data: function() {
             return {
-                display: false,
+                display: true,
                 isAlarm: true,
             };
         },
@@ -98,8 +98,12 @@
                 margin: 15px;
                 font-size: 30px;
                 font-weight: bold;
-                border-radius: 18px;
-                background-color: red;
+                color:white;
+                background: rgba( 255, 0, 0, 0.50 );
+                box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+                backdrop-filter: blur( 4.5px );
+                -webkit-backdrop-filter: blur( 4.5px );
+                border-radius: 10px;
             }
         }
     }
