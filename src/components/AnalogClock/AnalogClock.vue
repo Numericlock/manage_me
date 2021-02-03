@@ -1,6 +1,6 @@
 <template>
     <div class="clock">
-        <dials />
+        <dials :clock_type="clock_type"/>
         <hand class="hand seconds" type="seconds"       :rotate="seconds"/>
         <hand class="hand minutes" type="minutes"       :rotate="minutes" />
         <hand class="hand hours"   type="hours"         :rotate="hours"/>
@@ -19,7 +19,11 @@ export default {
         Hand,
         Dials
     },
-
+    props:{
+        clock_type:{
+            default:'analog_12'
+        }
+    },
     data() {
         return {
             intervalId: undefined,
@@ -51,7 +55,21 @@ export default {
         
         alarm_hours(){
             let hh = Number(this.$store.state.nextAlarmTime.substr(1,2));
-            return 30 * (hh + this.alarm_minutes / 360);
+            let direction;
+            switch(this.clock_type){
+                case 'analog_12':
+                    direction = 30 * (hh + this.alarm_minutes / 360);
+                    break;
+                case 'analog_24':
+                    direction = 30 * ((hh + this.alarm_minutes / 360)/2);
+                    break;
+                default:
+                    console.log(`Sorry, we are out of clock_type.`);
+            }
+            
+            console.log(this.clock_type);
+            //direction = 30 * (hh + this.alarm_minutes / 360);
+            return direction;
         },
         next_alarm_time() {
             return this.$store.getters.nextTime;

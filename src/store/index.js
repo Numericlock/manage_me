@@ -11,7 +11,8 @@ const store = new Vuex.Store({
         nextAlarmId:null,
         currentTime: null,
         alarmCount:null,
-        days:[ "日", "月", "火", "水", "木", "金", "土" ]
+        days:[ "日", "月", "火", "水", "木", "金", "土" ],
+        clock_type:'analog_12'
     },
     getters: {
         nextTime (state) {

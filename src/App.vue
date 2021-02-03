@@ -48,6 +48,24 @@
             }
         },
         methods: {
+            db_load_config: function() {
+                db.loadDatabase((error) => {
+                    if (error !== null) console.error(error);
+                    db.find({
+                        type: "config"
+                    }, function(err, docs) {
+                        var clock_type;
+                        docs.forEach((doc) =>{
+                            switch(doc.key){
+                                case 'clock_type':
+                                    clock_type=doc.value;
+                                    this.$store.state.clock_type = doc.value;
+                                    break;
+                            }
+                        });
+                    }.bind(this));
+                });
+            },
             nextAlarm: function() {
                 console.log("Run nextAlarm");
                 var dateNow = new Date();

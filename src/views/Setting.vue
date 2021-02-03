@@ -22,65 +22,42 @@
                     <router-link class="tabbar-icon-wrapper" to="/sounds"><button>音楽を追加する</button></router-link>
                 </div>
             </div>
+            <div class="input-wrapper">
+                <label>
+                    Clock Type
+                </label>
+                <div>
+                    <multiselect v-model="clock_type_value"  deselect-label="Can't remove this value" placeholder="デフォルト" :options="clock_types" :searchable="false" :allow-empty="false">
+                    </multiselect>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 <script>
-    import Vue from 'vue/dist/vue.esm.js';
-    import sound from '../components/sound.vue';
-    const app = window.app;
-    var Datastore = require('nedb');
-    var path = require('path');
-    const fs = window.fs;
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        //  filename: '../data.db',
-        autoload: true
-    });
-    const mm = require('music-metadata-browser');
-    /*     //import dbData from './namelist.json';
-        var textdata = "ふざけるなやよ";
-        fs.writeFileSync('./src/test.txt', textdata, "utf-8", (err) => {
-          if(err) {
-            console.log(err);
-          }
-            console.log("");
-        });
-        const textfile = fs.readFileSync(app.getPath('music')+"/REOL/Reol/004-十中八九.flac", (err, data) => {
-          if (err) throw err;
-          console.log(data);
-        });
-        var toArrayBuffer = function(buf){    
-            return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-        }
-        console.log(textfile);
-          var source;
-          var audioContext = new AudioContext;
-         // var fileReader   = new FileReader;
-          var analyser = audioContext.createAnalyser();
-          analyser.fftSize = 128;
-          analyser.connect(audioContext.destination);
-         // fileReader.onload = function(){
-         //     console.log(fileReader.result);
-            audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer){
-              if(source) {
-                source.stop();
-              }
-              source = audioContext.createBufferSource();
-              source.buffer = buffer;
-              source.connect(analyser);
-             // source.start(0);
-            });
-         // }; */
+    import Multiselect from 'vue-multiselect';
+//    const app = window.app;
+//    var Datastore = require('nedb');
+//    var path = require('path');
+   // const db = new Datastore({
+   //     filename: path.join(app.getPath('userData'), '/alarm.db'),
+   //     autoload: true
+   // });
     export default {
         name: 'Setting',
+        components:{
+             Multiselect
+        },
         data() {
             return {
                 toggleText: "OFF",
                 file_name: null,
                 file_path: null,
                 sound_docs: [],
-                source: null
+                source: null,
+                clock_type_value:'Analog Clock 12',
+                clock_types:['Analog Clock 12','Analog Clock 24'],
+                clock_types_db_name:['analog_12','analog_24']
             }
         },
         methods: {
@@ -91,102 +68,11 @@
                     this.toggleText = "OFF";
                 }
             },
-            file_out: function(e) {
-                const files = e.target.files || e.dataTransfer.files;
-                this.file_name = files[0].name;
-                this.file_path = files[0].path;
-                // fileReader.readAsArrayBuffer(e.target.files[0]);
-            },
-            sound_register: function() {
-                if (this.file_path) {
-                    var type = "sound";
-                    const textfile = fs.readFileSync(this.file_path, (err) => {
-                        if (err) throw err;
-                    });
-                    var title;
-                    // var src;
-                    // var artist;   
-                    var blob = new Blob([textfile]);
-                    mm.parseBlob(blob).then(metadata => {
-                        //  var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
-                        // src = "background-image:url(data:;base64," + j + ")";
-                        title = metadata.common.title;
-                        var dbData = {
-                            "name": title,
-                            "type": type,
-                            "path": this.file_path
-                        };
-                        db.insert(dbData, (error, newDoc) => {
-                            if (error !== null) console.error(error);
-                            console.log(newDoc);
-                        });
-                        // artist = metadata.common.artist;
-                    });
-                }
-            },
-            appendBox(name, path) {
-                var ComponentClass = Vue.extend(sound);
-                var instance = new ComponentClass({
-                    propsData: {
-                        name: name,
-                        path: path
-                    }
-                });
-
-                // console.log(sound);
-                instance.$mount();
-                //console.log(instance.$el);
-                document.getElementById('sounds-wrapper').appendChild(instance.$el)
-            },
-            getData: function() {
-                //var sounds = this;
-                var sound_docs = null;
-                db.find({
-                    type: "sound"
-                }, function(err, docs) {
-                    //for (var i = 0; i < docs.length; i++) {
-                    //    sounds.appendBox(docs[i].name, docs[i].path);
-                    //}
-                    sound_docs = docs;
-                    this.sound_docs = sound_docs;
-                }.bind(this));
-                this.sound_docs = sound_docs;
-            },
-            narudake: function() {
-                console.log("なるだけですけど？");
-            },
-            sound_start(id) {
-                var calum = this.sound_docs.filter((v) => v._id == id);
-                var path = calum[0].path.replace(app.getPath('music'), '');
-                const textfile = fs.readFileSync(app.getPath('music') + path, (err, data) => {
-                    if (err) throw err;
-                    console.log(data);
-                });
-                var toArrayBuffer = function(buf) {
-                    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-                }
-                // console.log(textfile);
-                var audioContext = new AudioContext;
-                // var fileReader   = new FileReader;
-                var analyser = audioContext.createAnalyser();
-                analyser.fftSize = 128;
-                analyser.connect(audioContext.destination);
-                audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer) {
-                    if (this.source) {
-                        this.source.stop();
-                    }
-                    this.source = audioContext.createBufferSource();
-                    this.source.buffer = buffer;
-                    this.source.connect(analyser);
-                    this.source.start(0);
-                }.bind(this));
-            },
-            sound_stop: function() {
-                this.source.stop();
+            update_config: function(){
+                
             }
         },
         mounted() {
-            this.getData();
             this.$emit('nextAlarm');
         }
     }

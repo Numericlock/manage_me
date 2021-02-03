@@ -11,7 +11,7 @@
        <!-- <AlarmDetail ref="AlarmDetail" @run="getData"/>-->
         <EditAlarm ref="EditAlarm" @run="getData" :state="this.modal_type"/>
         <div class="clock-wrapper">
-            <clock/>
+            <clock :clock_type="clock_type"/>
         </div>
         <div class="aleam-lists">
             <div v-for="(alarm, key) in alarm_data" :key="key" class="aleam">
@@ -41,7 +41,7 @@
 </template>
 
 <script>
-    import clock from '../components/AnalogClock24/AnalogClock.vue'
+    import clock from '../components/AnalogClock/AnalogClock.vue'
     import addButton from '../components/DotPlusButton.vue'
    // import AddAlarm from '../components/AddAlarm.vue'
    // import AlarmDetail from '../components/AlarmDetail.vue'
@@ -67,7 +67,7 @@
             return {
                 alarm_data: [],
                 add_alarm:false,
-                modal_type:null,
+                modal_type:null
             }
         },
         computed: {
@@ -75,6 +75,9 @@
                 var count = this.$store.getters.alarmCount;
                 if (count == 0) return true
                 else return false
+            },
+            clock_type:function(){
+                return this.$store.state.clock_type;
             }
         },
         methods: {
