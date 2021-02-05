@@ -1,19 +1,13 @@
 <template>
     <div class="home-wrapper">
-       <!-- <router-link class="alarm-add-button" to="/alarm/add">
-            <addButton @click="addAlarmModal"/>
-        </router-link>
-        -->
         <div class="alarm-add-button" @click="addAlarmModal">
-            <addButton />
+            <addButton :is_dark="is_dark"/>
         </div>
-       <!-- <AddAlarm ref="AddAlarm" @run="getData"/>-->
-       <!-- <AlarmDetail ref="AlarmDetail" @run="getData"/>-->
         <EditAlarm ref="EditAlarm" @run="getData" :state="this.modal_type"/>
         <div class="clock-wrapper">
-            <clock :clock_type="clock_type"/>
+            <clock :clock_type="clock_type" :is_dark="is_dark"/>
         </div>
-        <div class="aleam-lists">
+        <div :class="['aleam-lists', {'dark': is_dark},{'light': !is_dark}]">
             <div v-for="(alarm, key) in alarm_data" :key="key" class="aleam">
                 <div class="alarm-router" @click="alarmDetailModal(alarm._id)">
 
@@ -43,8 +37,6 @@
 <script>
     import clock from '../components/AnalogClock/AnalogClock.vue'
     import addButton from '../components/DotPlusButton.vue'
-   // import AddAlarm from '../components/AddAlarm.vue'
-   // import AlarmDetail from '../components/AlarmDetail.vue'
     import EditAlarm from '../components/EditAlarm.vue'
     const app = window.app;
     var Datastore = require('nedb');
@@ -58,8 +50,6 @@
         components: {
             clock,
             addButton,
-          //  AddAlarm,
-          //  AlarmDetail,
             EditAlarm
         },
         props: ['next_alarm_time'],
@@ -67,7 +57,7 @@
             return {
                 alarm_data: [],
                 add_alarm:false,
-                modal_type:null
+                modal_type:null,
             }
         },
         computed: {
@@ -78,11 +68,13 @@
             },
             clock_type:function(){
                 return this.$store.state.clock_type;
+            },
+            is_dark:function(){
+                return this.$store.state.is_dark;
             }
         },
         methods: {
             getData: function() {
-                console.log("getData");
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                 });
@@ -150,17 +142,12 @@
         },
         created() {
             this.getData();
-            //this.$emit('nextAlarm');
         }
     }
 
 </script>
 
 <style lang="scss">
-    a:link {
-        color: white;
-        text-decoration: none;
-    }
     
     .alarm-add-button{
         position: absolute;
@@ -176,7 +163,7 @@
 
     /*スクロールバーの横幅指定*/
     .aleam-lists::-webkit-scrollbar {
-        width: 15px;
+        width: 10px;
     }
 
     /*スクロールバーの背景色・角丸指定*/
@@ -198,14 +185,8 @@
             display: flex;
             flex-direction: column;
             overflow-y: scroll;
-            color:white;
             height:150px;
-            background: rgba( 62, 62, 62, 0.50 );
-            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-            backdrop-filter: blur( 5.0px );
-            -webkit-backdrop-filter: blur( 5.0px );
-            border-radius: 10px;
-            border: 1px solid rgba( 255, 255, 255, 0.18 );
+
             .aleam {
                 display: flex;
                 flex-direction: row;

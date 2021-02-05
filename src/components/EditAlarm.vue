@@ -1,9 +1,10 @@
 <template>
     <div v-show="display">
+        <AttentionModal @submit='removeAlarm' ref="AttentionModal" v-bind:text="text" :is_dark="is_dark"/>
         <div @click="displayControl(false)">
             <ModalBackground transparency="0.1"/>
         </div>
-        <div class="aleam-add-wrapper">
+        <div :class="['aleam-add-wrapper', {'dark': is_dark},{'light': !is_dark}]">
             <div class="title">
                 <span v-if="this.state=='edit'">Edit Alarm</span>
                 <span v-if="this.state=='add'">New Aleam</span>
@@ -49,7 +50,6 @@
                     <span v-if="this.state=='add'" @click="alarmAdd">作成</span>
                 </div>
             </form>
-            <AttentionModal @submit='removeAlarm' ref="AttentionModal" v-bind:text="text"/>
         </div>
     </div>
 </template>
@@ -100,6 +100,11 @@
                 is_mounted:false,
                 text:"削除してもいいの？",
                 display:false
+            }
+        },
+        computed: {
+            is_dark:function(){
+                return this.$store.state.is_dark;
             }
         },
         methods: {
@@ -360,14 +365,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        z-index:2000;
-        color:white;
-        background: rgba( 62, 62, 62, 0.50 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 5.0px );
-        -webkit-backdrop-filter: blur( 5.0px );
-        border-radius: 10px;
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
+        z-index:1000;
 
         .title {
             display: flex;

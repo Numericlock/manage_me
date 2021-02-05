@@ -1,5 +1,5 @@
 <template>
-    <div class="tabbar ">
+    <div :class="['tabbar', {'dark': is_dark},{'light': !is_dark}]">
         <router-link class="tabbar-icon-wrapper" to="/">
             <svg version="1.1" viewBox="0 0 512 512" 
                  :class="[{'carrent-page-icon': carrentPage == 'Home'}]">
@@ -49,6 +49,11 @@
         data() {
             return {}
         },
+        computed:{
+            is_dark:function(){
+                return this.$store.state.is_dark;
+            }
+        },
         components: {}
     }
 
@@ -62,19 +67,12 @@
         justify-content: space-around;
         padding:10px 0px;
         margin:20px 0px;
-        background: rgba( 62, 62, 62, 0.50 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 5.0px );
-        -webkit-backdrop-filter: blur( 5.0px );
-        border-radius: 10px;
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
         .tabbar-icon-wrapper {
             line-height: 50px;
             svg {
                 width: 40px;
                 height: 40px;
                 vertical-align: middle;
-                fill: white;
                 transition: width 0.3s, height 0.3s, filter -0.3s;
             }
             svg:hover {

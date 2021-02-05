@@ -1,13 +1,18 @@
 <template>
-    <div class="add-button">
-        <button type="button" class="dotRadius" >
-            <span class="plus"></span>
+    <div class="plus-button">
+        <button type="button" :class="['dot-radius', {'dark': is_dark},{'light': !is_dark},{'dark-dot-ring': !is_dark}]" >
+            <span class="plus"  :class="['plus', {'dark-background-color': !is_dark}]"></span>
         </button>
     </div> 
 </template>
 
 <script>
     export default {
+        props:{
+            is_dark:{
+                default:false
+            }
+        },
         data: function() {
             return {
                 
@@ -22,15 +27,32 @@
     }
 </script>
 
-<style lang="scss">
-    .add-button {
+<style lang="scss" >
+    $darkColor:#383838;
+    .dark{
+        background: rgba( 62, 62, 62, 0.50 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 5.0px );
+        -webkit-backdrop-filter: blur( 5.0px );
+    }
+    .dark-background-color{
+        background:$darkColor !important;
+    }
+    .dark-background-color:before{
+        background:$darkColor !important;
+    }
+    .dark-dot-ring{
+        border: double 2px $darkColor !important;
+        border-style: dashed !important;
+    }
+    .plus-button {
         display: flex;
         justify-content: center;
         flex-grow: 3;
         line-height: 90px;
         $button_size: 80px;
 
-        .dotRadius {
+        .dot-radius {
             -webkit-appearance: button;
             -webkit-writing-mode: horizontal-tb !important;
             letter-spacing: normal;
@@ -39,7 +61,6 @@
             margin: 0em;
             padding: 1px 6px;
             border-width: 2px;
-            background: transparent;
             border: double 2px white;
             border-style: dashed;
             border-radius: 100%;
@@ -47,10 +68,6 @@
             height: $button_size;
             color: white;
             position: relative;
-            background: rgba( 62, 62, 62, 0.50 );
-            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-            backdrop-filter: blur( 5.0px );
-            -webkit-backdrop-filter: blur( 5.0px );
             -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
             -webkit-transition: -webkit-transform ease-out 200ms;
@@ -62,7 +79,7 @@
             .plus {
                 display: block;
                 position: relative;
-                background: white;
+                background:white;
                 width: 4px;
                 height: $button_size/2;
                 left: $button_size*0.37;
@@ -85,26 +102,25 @@
             }
         }
 
-        .dotRadius:hover {
+        .dot-radius:hover {
             border: solid 2px #fff;
             filter: drop-shadow(0 0 0.5rem white);
-            color: white;
             transition: border 100s, filter 0.3s;
 
         }
 
-        .dotRadius:focus {
+        .dot-radius:focus {
             outline: none;
         }
 
-        .dotRadius:hover>.plus {
+        .dot-radius:hover>.plus {
             background: white;
             filter: drop-shadow(0 0 0.1rem white);
             transition: background-color 0.3s,filter 0.3s;
 
         }
 
-        .dotRadius:hover>.plus:before {
+        .dot-radius:hover>.plus:before {
             background: white;
             filter: drop-shadow(0 0 0.1rem white);
             transition: background-color 0.3s,filter 0.3s;

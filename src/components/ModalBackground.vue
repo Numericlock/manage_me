@@ -1,5 +1,5 @@
 <template>
-    <div class="modal" :style="{'background-color':'rgba(0, 0, 0,' + transparency}"></div>
+    <div class="modal" :style="{'background-color':'rgba(0, 0, 0,' + transparency,'z-index':zIndex}"></div>
 </template>
 
 <script>
@@ -7,6 +7,9 @@
         props:{
             transparency:{
                 default:0.7
+            },
+            zIndex:{
+                default:900
             }
         },
         data () {
@@ -25,6 +28,5 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        z-index: 900;
     }
 </style>

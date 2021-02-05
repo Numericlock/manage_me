@@ -12,7 +12,8 @@ const store = new Vuex.Store({
         currentTime: null,
         alarmCount:null,
         days:[ "日", "月", "火", "水", "木", "金", "土" ],
-        clock_type:'analog_12'
+        clock_type:'analog_12',
+        is_dark:null
     },
     getters: {
         nextTime (state) {

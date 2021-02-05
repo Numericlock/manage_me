@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="dials" v-if="clock_type=='analog_12'">
+        <div :class="['dials', {'dark': is_dark},{'light': !is_dark}]" v-if="clock_type=='analog_12'"><!--12時間表記-->
             <div 
                 v-for="n in 60" 
                 :key="n"
@@ -16,7 +16,7 @@
                 </p>
             </div>
         </div>
-        <div class="dials" v-if="clock_type=='analog_24'">
+        <div :class="['dials', {'dark': is_dark},{'light': !is_dark}]" v-if="clock_type=='analog_24'"><!--２4時間表記-->
            <div 
                 v-for="n in 60" 
                 :key="n"
@@ -49,7 +49,10 @@ export default {
     props:{
         clock_type:{
             default:'analog_12'
-        }  
+        },
+        is_dark:{
+            default:false
+        }
     },
     methods: {
         top(val) {
@@ -70,18 +73,10 @@ export default {
 
 <style scoped>
 .dials {
-    background-color: #333;
     border-radius: 300px;
-
     position: relative;
-
     height: 300px;
     width: 300px;
-    background: rgba( 62, 62, 62, 0.50 );
-    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-    backdrop-filter: blur( 5.0px );
-    -webkit-backdrop-filter: blur( 5.0px );
-    border: 1px solid rgba( 255, 255, 255, 0.18 );
 }
 
 .scale {
@@ -111,8 +106,6 @@ export default {
 .analog-12-num {
     margin-top: 20px;
     margin-left: -15px;
-
-    color: white;
     font-size: 28px;
     font-weight: bold;
     text-align: center;
@@ -122,8 +115,6 @@ export default {
 .analog-24-num{
     margin-top: 20px;
     margin-left: -15px;
-
-    color: white;
     font-size: 18px;
     font-weight: bold;
     text-align: center;

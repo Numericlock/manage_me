@@ -1,6 +1,6 @@
 <template>
     <div class="clock">
-        <dials :clock_type="clock_type"/>
+        <dials :clock_type="clock_type" :is_dark="is_dark"/>
         <hand class="hand seconds" type="seconds"       :rotate="seconds"/>
         <hand class="hand minutes" type="minutes"       :rotate="minutes" />
         <hand class="hand hours"   type="hours"         :rotate="hours"/>
@@ -22,6 +22,9 @@ export default {
     props:{
         clock_type:{
             default:'analog_12'
+        },
+        is_dark:{
+            default:false
         }
     },
     data() {
@@ -45,7 +48,7 @@ export default {
 
         hours() {
             let hh = moment(this.time).hours();
-            return 30 * (hh + this.minutes / 360);
+            return this.hours_direction(hh,this.minutes,this.clock_type);
         },
         
         alarm_minutes() {
@@ -55,21 +58,7 @@ export default {
         
         alarm_hours(){
             let hh = Number(this.$store.state.nextAlarmTime.substr(1,2));
-            let direction;
-            switch(this.clock_type){
-                case 'analog_12':
-                    direction = 30 * (hh + this.alarm_minutes / 360);
-                    break;
-                case 'analog_24':
-                    direction = 30 * ((hh + this.alarm_minutes / 360)/2);
-                    break;
-                default:
-                    console.log(`Sorry, we are out of clock_type.`);
-            }
-            
-            console.log(this.clock_type);
-            //direction = 30 * (hh + this.alarm_minutes / 360);
-            return direction;
+            return this.hours_direction(hh,this.alarm_minutes,this.clock_type);
         },
         next_alarm_time() {
             return this.$store.getters.nextTime;
@@ -81,6 +70,18 @@ export default {
             this.intervalId = setInterval(() => {
                 this.time = new Date()
             }, 10)
+        },
+        hours_direction(hh,minutes,clock_type){
+            let direction;
+            switch(clock_type){
+                case 'analog_12':
+                    direction = 30 * (hh + minutes / 360);
+                    break;
+                case 'analog_24':
+                    direction = 30 * ((hh + minutes / 360)/2);
+                    break;
+            }
+            return direction;
         }
     },
 
@@ -116,5 +117,14 @@ export default {
 .hours {
     left: 148px;
     top: 70px;
+}
+    
+.dark {
+    background: rgba( 62, 62, 62, 0.50 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    backdrop-filter: blur( 5.0px );
+    -webkit-backdrop-filter: blur( 5.0px );
+    border-radius: 10px;
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
 }
 </style>

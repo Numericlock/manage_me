@@ -1,8 +1,8 @@
 <template>
     <div v-show="display">
-        <ModalBackground transparency="0.1"/>
+        <ModalBackground transparency="0.1" zIndex="10000"/>
         <transition name="fade">
-            <div class="modal-content" v-show="display">
+            <div :class="['modal-content', {'dark': is_dark},{'light': !is_dark}]">
                 <span class="title" v-if="isAlarm">{{ title }}</span>
                 <span class="time" v-if="isAlarm">{{ time }}</span>
                 <SoundAndVisualizer ref="SoundAndVisualizer" :hide_playback_button=true />
@@ -21,9 +21,14 @@
         props: ['title', 'time', 'sound_path', 'sound_name'],
         data: function() {
             return {
-                display: false,
+                display: true,
                 isAlarm: true,
             };
+        },
+        computed: {
+            is_dark:function(){
+                return this.$store.state.is_dark;
+            }
         },
         methods: {
             open(path,is_alarm) {
@@ -47,16 +52,6 @@
 
 </script>
 <style lang="scss" scoped>
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.7);
-        z-index: 1000;
-    }
-
     .modal-content {
         text-align: center;
         display: flex;
@@ -70,13 +65,6 @@
         height: 400px;
         width: 300px;
         z-index: 11200;
-        color:white;
-        background: rgba( 62, 62, 62, 0.50 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 5.0px );
-        -webkit-backdrop-filter: blur( 5.0px );
-        border-radius: 10px;
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
         canvas {
             background-size: cover;
             border-radius: 15px;
@@ -99,7 +87,7 @@
                 font-size: 30px;
                 font-weight: bold;
                 color:white;
-                background: rgba( 255, 0, 0, 0.50 );
+                background: rgba( 255, 0, 0, 0.90 );
                 box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
                 backdrop-filter: blur( 4.5px );
                 -webkit-backdrop-filter: blur( 4.5px );

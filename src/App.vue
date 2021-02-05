@@ -45,21 +45,25 @@
         computed: {
             next_alarm_time() {
                 return this.$store.getters.nextTime;
+            },
+            clock_type(){
+                return this.$store.state.clock_type;
             }
         },
         methods: {
-            db_load_config: function() {
+            db_load_config: function() { //データベースからtype=configのデータを取得しstoreの対応する変数に入れる。
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     db.find({
                         type: "config"
                     }, function(err, docs) {
-                        var clock_type;
                         docs.forEach((doc) =>{
                             switch(doc.key){
                                 case 'clock_type':
-                                    clock_type=doc.value;
                                     this.$store.state.clock_type = doc.value;
+                                    break;
+                                case 'is_dark':
+                                    this.$store.state.is_dark = doc.value;
                                     break;
                             }
                         });
@@ -168,7 +172,6 @@
                 }
             },
             next_alarm_time(val, old) {
-                console.log("うごいてるよ");
                 var alarmTime = this.$store.state.nextAlarmTime;
                 var dateNow = new Date();
                 var dayOfWeekStr = this.$store.state.days[dateNow.getDay()];
@@ -181,7 +184,7 @@
                 if (alarmTime != null && currentTime != null) {
                     var alarmSeconds = to_minutes(alarmTime) * 60;
                     var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
-                    var sevenDaysSeconds = 604800;
+                    var sevenDaysSeconds = 604800;//１週間の秒数
 
                     function to_minutes(time) {
                         var result = (Number(time.substr(0, 1)) * 24 * 60) +
@@ -203,11 +206,12 @@
         },
         mounted: function() {
             this.nextAlarm();
+            this.db_load_config();
         },
     };
 
 </script>
-<style>
+<style lang="scss">
     body * {
         font-family: "Helvetica Neue",
             Arial,
@@ -216,18 +220,13 @@
             Meiryo,
             sans-serif;
     }
-
-    html {
-        height: 100vh;
-        width: 100vw;
-
+    
+    a:link {
+        color: white;
+        text-decoration: none;
     }
-
-    #app {
-        margin: none;
-    }
-
-    .wrapper {
+    
+    .wrapper { //背景
         display: flex;
         flex-direction: column;
         font-weight: bolder;
@@ -240,7 +239,6 @@
     .content {
         height: 500px;
         max-height: 500px;
-        float: left;
     }
 
     .animate__animated {
@@ -249,6 +247,34 @@
 
     .animate__fadeIn {
         --animate-duration: 1000ms;
+    }
+    .dark {
+        color:white;
+        fill:white;
+        background: rgba( 62, 62, 62, 0.50 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 5.0px );
+        -webkit-backdrop-filter: blur( 5.0px );
+        border-radius: 10px;
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
+    }
+    .dark-color{
+        color:white;
+        fill:white;
+    }
+    .light {
+        color:#383838;
+        fill:#383838;
+        background: rgba( 255, 255, 255, 0.25 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 4px );
+        -webkit-backdrop-filter: blur( 4px );
+        border-radius: 10px;
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
+    }
+    .light-color{
+        color:#383838;
+        fill:#383838;
     }
 
 </style>

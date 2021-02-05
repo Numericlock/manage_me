@@ -1,6 +1,6 @@
 <template>
     <div class="add-button">
-        <button type="button" class="dotRadius" >
+        <button type="button" :class="['dot-radius', {'dark': is_dark},{'light': !is_dark}]" >
             <svg
                xmlns:dc="http://purl.org/dc/elements/1.1/"
                xmlns:cc="http://creativecommons.org/ns#"
@@ -56,6 +56,11 @@
 
 <script>
     export default {
+        props:{
+            is_dark:{
+                default:false
+            }
+        },
         data: function() {
             return {
                 
@@ -70,7 +75,13 @@
     }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+    .dark{
+        background: rgba( 62, 62, 62, 0.50 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 5.0px );
+        -webkit-backdrop-filter: blur( 5.0px );
+    }
     .add-button {
         display: flex;
         position: relative;
@@ -79,7 +90,7 @@
         line-height: 90px;
         $button_size: 80px;
 
-        .dotRadius {
+        .dot-radius {
             -webkit-appearance: button;
             -webkit-writing-mode: horizontal-tb !important;
             letter-spacing: normal;
@@ -88,18 +99,12 @@
             margin: 0em;
             padding: 1px 6px;
             border-width: 2px;
-            background: transparent;
             border: double 2px white;
             border-style: dashed;
             border-radius: 100%;
             width: $button_size;
             height: $button_size;
-            color: white;
             position: relative;
-            background: rgba( 62, 62, 62, 0.50 );
-            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-            backdrop-filter: blur( 5.0px );
-            -webkit-backdrop-filter: blur( 5.0px );
             -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
             -webkit-transition: -webkit-transform ease-out 200ms;
@@ -111,7 +116,6 @@
             svg {
                 display: block;
                 position: relative;
-                fill:white;
                 width:50px;
                 height:50px;
                 left:5px;
@@ -120,23 +124,21 @@
             }
         }
 
-        .dotRadius:hover {
+        .dot-radius:hover {
             border: solid 2px #fff;
             filter: drop-shadow(0 0 0.5rem white);
             color: white;
             transition: border 100s, filter 0.3s;
-
         }
 
-        .dotRadius:focus {
+        .dot-radius:focus {
             outline: none;
         }
 
-        .dotRadius:hover>.svg {
+        .dot-radius:hover>.svg {
             background: white;
             filter: drop-shadow(0 0 0.1rem white);
             transition: background-color 0.3s,filter 0.3s;
-
         }
 
     }

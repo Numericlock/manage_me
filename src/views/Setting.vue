@@ -1,25 +1,16 @@
 <template>
     <div class="setting-wrapper">
-        <div class="title">
+        <div :class="['title', {'dark-color': is_dark},{'light-color': !is_dark}]">
             <span>Setting</span>
         </div>
-        <div class="settings">
+        <div :class="['settings', {'dark': is_dark},{'light': !is_dark}]">
             <div class="input-wrapper">
                 <label>
                     DarkThema
                 </label>
                 <div class="block aleam-istrue-button">
-                    <span for="darkthema">{{toggleText}}</span>
-                    <input data-index="0" id="darkthema" v-on:change="toggle" type="checkbox" />
+                    <input data-index="0" id="darkthema" type="checkbox" @click="update_config('is_dark')" :checked="is_dark"/>
                     <label for="darkthema"></label>
-                </div>
-            </div>
-            <div class="input-wrapper">
-                <label>
-                    Add sound
-                </label>
-                <div class="block aleam-istrue-button">
-                    <router-link class="tabbar-icon-wrapper" to="/sounds"><button>音楽を追加する</button></router-link>
                 </div>
             </div>
             <div class="input-wrapper">
@@ -27,7 +18,7 @@
                     Clock Type
                 </label>
                 <div>
-                    <multiselect v-model="clock_type_value"  deselect-label="Can't remove this value" placeholder="デフォルト" :options="clock_types" :searchable="false" :allow-empty="false">
+                    <multiselect v-model="clock_type_value" @input="update_config('clock_type')" deselect-label="Can't remove this value" placeholder="デフォルト" :options="clock_types" :searchable="false" :allow-empty="false">
                     </multiselect>
                 </div>
             </div>
@@ -36,13 +27,13 @@
 </template>
 <script>
     import Multiselect from 'vue-multiselect';
-//    const app = window.app;
-//    var Datastore = require('nedb');
-//    var path = require('path');
-   // const db = new Datastore({
-   //     filename: path.join(app.getPath('userData'), '/alarm.db'),
-   //     autoload: true
-   // });
+    const app = window.app;
+    var Datastore = require('nedb');
+    var path = require('path');
+    const db = new Datastore({
+        filename: path.join(app.getPath('userData'), '/alarm.db'),
+        autoload: true
+    });
     export default {
         name: 'Setting',
         components:{
@@ -55,25 +46,58 @@
                 file_path: null,
                 sound_docs: [],
                 source: null,
-                clock_type_value:'Analog Clock 12',
+                clock_type_value:null,
                 clock_types:['Analog Clock 12','Analog Clock 24'],
-                clock_types_db_name:['analog_12','analog_24']
+                clock_types_db_name:['analog_12','analog_24'],
+               // is_dark_bool:null
+            }
+        },
+        computed: {
+            is_dark:function(){
+                return this.$store.state.is_dark;
             }
         },
         methods: {
-            toggle: function() {
-                if (this.toggleText == "OFF") {
-                    this.toggleText = "ON";
-                } else {
-                    this.toggleText = "OFF";
+            update_config(key){
+                const query = {type: 'config'};
+                const update = {type: 'config'};
+                const options = {upsert: true};
+                switch(key){
+                    case 'clock_type':
+                        var clock_type = this.clock_types_db_name[this.clock_types.indexOf(this.clock_type_value)];
+                        query.key = key;
+                        update.key = key;
+                        update.value =  clock_type;
+                        this.$store.state.clock_type = clock_type;
+                        break;
+                    case 'is_dark':
+                        query.key = key;
+                        update.key = key;
+                        if(this.$store.state.is_dark) update.value = false;
+                        else update.value = true;
+                        this.$store.state.is_dark = update.value;
+                        break;
+                        
                 }
-            },
-            update_config: function(){
                 
+                db.loadDatabase((error) => {
+                    if (error !== null) console.error(error);
+                    db.update(query, update, options, (error, numOfDocs) => {
+                        if (error !== null) console.error(error);
+                        // numOfDocsには更新した件数が返る
+                        console.log(numOfDocs);
+                        // ドキュメント全体がupdateの内容に更新されている
+                    });
+                });
+            },
+            get_config_data(){
+                this.clock_type_value =  this.clock_types[this.clock_types_db_name.indexOf(this.$store.state.clock_type)];
+               // this.is_dark_bool = this.$store.state.is_dark;
             }
         },
         mounted() {
             this.$emit('nextAlarm');
+            this.get_config_data();
         }
     }
 
@@ -83,7 +107,7 @@
     .setting-wrapper {
         display: flex;
         flex-direction: column;
-        justify-content: space-around;
+        justify-content: flex-start;
         height: 100%;
 
         .title {
@@ -91,15 +115,14 @@
             justify-content: center;
             height:35px;
             font-size: 30px;
-            padding-top:10px;
+            padding:10px 0px;
         }
 
         .settings {
             display: flex;
             flex-direction: column;
-            flex-grow: 5;
-            padding: 0px 20px;
 
+            padding: 0px 20px;
             .input-wrapper {
                 display: flex;
 
@@ -203,7 +226,8 @@
                         height: 30px;
                         margin-top: 10px;
                         box-sizing: border-box;
-                        border: 3px solid;
+                        border: 1px solid rgba( 255, 255, 255, 0.18 );
+                        background: rgba( 65, 65, 65, 0.80 );
                         float: left;
                         border-radius: 100px;
                         position: relative;
@@ -212,10 +236,15 @@
                     }
 
                     input[type=checkbox]:checked+label {
-                        background: #55e868;
+                        background: rgba( 0, 149, 70, 0.60 );
+                        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+                        backdrop-filter: blur( 4px );
+                        -webkit-backdrop-filter: blur( 4px );
+                        border: 1px solid rgba( 255, 255, 255, 0.18 );
                     }
 
                     input[type=checkbox]:checked+label:before {
+                        top:4px;
                         left: 23px;
                     }
 
@@ -225,13 +254,15 @@
                         width: 20px;
                         height: 20px;
                         position: absolute;
-                        background: white;
-                        left: 2px;
-                        top: 2px;
+                        left: 4px;
+                        top: 4px;
                         box-sizing: border-box;
-                        border: 3px solid;
-                        color: black;
                         border-radius: 100px;
+                        background: rgba( 255, 255, 255, 0.80 );
+                        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+                        backdrop-filter: blur( 4px );
+                        -webkit-backdrop-filter: blur( 4px );
+                        border: 1px solid rgba( 255, 255, 255, 0.18 );
                     }
                 }
             }
