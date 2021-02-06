@@ -27,13 +27,7 @@
 </template>
 <script>
     import Multiselect from 'vue-multiselect';
-    const app = window.app;
-    var Datastore = require('nedb');
-    var path = require('path');
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        autoload: true
-    });
+    import db from '../datastore'
     export default {
         name: 'Setting',
         components:{

@@ -61,8 +61,8 @@
             margin: 0em;
             padding: 1px 6px;
             border-width: 2px;
-            border: double 2px white;
-            border-style: dashed;
+            border: double 2px white !important;
+            border-style: dashed !important;
             border-radius: 100%;
             width: $button_size;
             height: $button_size;

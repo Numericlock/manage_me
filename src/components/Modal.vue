@@ -21,7 +21,7 @@
         props: ['title', 'time', 'sound_path', 'sound_name'],
         data: function() {
             return {
-                display: true,
+                display: false,
                 isAlarm: true,
             };
         },

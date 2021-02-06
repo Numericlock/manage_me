@@ -4,6 +4,7 @@ import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'
 import db from './datastore'
+Vue.prototype.$db = db;
 import is_empty from './utils/is_empty'
 Vue.config.productionTip = false
 import store from './store'

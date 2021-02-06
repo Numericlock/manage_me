@@ -38,13 +38,7 @@
     import clock from '../components/AnalogClock/AnalogClock.vue'
     import addButton from '../components/DotPlusButton.vue'
     import EditAlarm from '../components/EditAlarm.vue'
-    const app = window.app;
-    var Datastore = require('nedb');
-    var path = require('path');
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        autoload: true
-    });
+    import db from '../datastore'
     export default {
         name: 'Home',
         components: {

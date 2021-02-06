@@ -56,14 +56,8 @@
     import AttentionModal from '../components/AttentionModal.vue'
     import DotSoundAddButton from '../components/DotSoundAddButton.vue'
     const app = window.app;
-    var Datastore = require('nedb');
-    var path = require('path');
     const fs = window.fs;
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        //  filename: '../data.db',
-        autoload: true
-    });
+    import db from '../datastore'
     const mm = require('music-metadata-browser');
     export default {
         name: 'Sounds',

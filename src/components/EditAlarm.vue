@@ -60,13 +60,7 @@
     import AttentionModal from './AttentionModal.vue'
     import 'vue2-timepicker/dist/VueTimepicker.css'
     import ModalBackground from './ModalBackground'
-    const app = window.app;
-    var Datastore = require('nedb');
-    var path = require('path');
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        autoload: true
-    });
+    import db from '../datastore'
 
     export default {
         name: 'alarmDetail',
