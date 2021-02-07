@@ -118,8 +118,7 @@
                     _id: this.alarm_id
                 }, {
                     multi: true
-                }, function(err, numRemoved) {
-                    console.log(numRemoved);
+                }, function() {
                     this.$emit('run');
                 }.bind(this));
             },
@@ -158,7 +157,7 @@
                         "isEnable": this.is_enable
                     };
                     db.insert(dbData, function(err, newDoc) {
-                        console.log(newDoc);
+                        if (err !== null) console.error(err);
                         var dateNow = new Date();
                         var days = this.$store.state.days;
                         var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
@@ -182,12 +181,11 @@
                     //this.$emit('nextAlarm');
                     this.displayControl(false);
                 } else {
-                    console.log("value is empty");
+                   // console.log("value is empty");
                 }
             },
             
             updateAlarm: function() {
-                console.log(this.time.mm);
                 if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                     var id = this.alarm_id;
                     var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
@@ -217,31 +215,12 @@
                         "sound_id": sound_id,
                         "isEnable": this.is_enable
                     };
-                    //var dateNow = new Date();
-                   //// var next_alarm_id = this.$store.state.nextAlarmId;
-                    //var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
-                    //var currentTime = String(dateNow.getDay()) + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2);
-                    //for (i = 0; i < this.value.length; i++) {
-                    //    var daytime = Number(days.indexOf(this.value[i]) + this.time.HH + this.time.mm);
-                    //    if (currentTime < daytime && daytime < nextAlarm) {
-                    //        nextAlarm = daytime;
-                    //    } else if (nextAlarm < currentTime && currentTime < daytime && daytime <= 62359 || nextAlarm < currentTime && daytime < nextAlarm && 0 <= daytime) {
-                    //        nextAlarm = daytime;
-                    //    }
-                    //}
-                    //var strNextAlarm = ('0000000000' + nextAlarm).slice(-5);
-                    ////////ＮＥＸＴアラーム自身を更新時の処理を記述する必要あり
-                    //this.$store.dispatch('next_alarm_refresh', {
-                    //    time: strNextAlarm,
-                    //    id: id
-                    //});
                     db.update({
                         _id: id
                     }, {
                         $set: dbData
-                    }, {}, function(err, numReplaced) {
+                    }, {}, function(err) {
                         if (err !== null) console.error(err);
-                        console.log("isEnable:False," + 'Replaced:', numReplaced);
                         this.$emit('run');
                     }.bind(this));
                     this.displayControl(false);
@@ -250,7 +229,6 @@
             
             onSelect(option) {
                 this.changeCheck();
-                console.log("onselect");
                 if (option === '毎日') {
                     this.value.length = 0;
                     for (var i = 1; i < this.options.length; i++) {
@@ -260,7 +238,6 @@
             },
             
             onRemove(option) {
-                console.log("onremove");
                 this.changeCheck();
                 var value = this.value;
                 if (option === '毎日') value.length = 0;
@@ -272,7 +249,6 @@
                     this.value=[];
                 }
                 this.display = bool;  
-                console.log(this.alarm_id);
             },
             
             setId(id){
@@ -285,6 +261,7 @@
                     db.find({
                         type: "sound"
                     }, function(err, docs) {
+                        if (err !== null) console.error(err);
                         docs.forEach((doc) => {
                             this.sound_options.push(doc.name);
                             this.sound_ids.push(doc._id);
@@ -300,6 +277,7 @@
                     db.findOne({
                         _id: id
                     }, function(err, doc) {
+                        if (err !== null) console.error(err);
                         var days = this.$store.state.days;
                         this.alarm_name = doc.name;
                         this.time.HH = doc.time.substr(0, 2);
@@ -313,20 +291,16 @@
                                 _id: doc.sound_id
                             },function(err, doc) {
                                 this.sound_value = doc.name;
-                                console.log(doc.name);
-                                console.log("is_mounted");
                                 this.is_mounted = true;
                             }.bind(this));
                         }else{
                             this.is_mounted = true;
-                            console.log("is_mounted");
                         }
                     }.bind(this));
                 });
             },
             changeCheck() {
                 if(this.state=='edit'){
-                    console.log("changeCheck");
                     if(this.is_mounted && !this.is_change){
                         if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                             this.is_change = true;

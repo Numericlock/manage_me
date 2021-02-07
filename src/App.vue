@@ -15,13 +15,7 @@
 <script>
     import AlarmModal from './components/Modal.vue'
     import Tabbar from './components/Tabbar.vue'
-    const app = window.app;
-    var Datastore = require('nedb');
-    var path = require('path');
-    const db = new Datastore({
-        filename: path.join(app.getPath('userData'), '/alarm.db'),
-        autoload: true
-    });
+    import db from './datastore'
     export default {
         name: 'app',
         components: {
@@ -71,11 +65,9 @@
                 });
             },
             nextAlarm: function() {
-                console.log("Run nextAlarm");
                 var dateNow = new Date();
                 var day = dateNow.getDay();
                 var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2))+1;
-                console.log(calcNum);
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     db.find({
@@ -162,7 +154,6 @@
             $route(to, from) {
                 // アニメーションの切り替え
                 this.carrentPage = to.name;
-                console.log(to.name);
                 if (to.meta.index == 7 || to.meta.index == 8) {
                     this.transition.enter = 'animate__animated animate__fadeIn';
                 } else if (to.meta.index > from.meta.index) {
@@ -179,8 +170,6 @@
                 var minutes = ("0" + dateNow.getMinutes()).slice(-2);
                 var seconds = ("0" + dateNow.getSeconds()).slice(-2);
                 var currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
-                console.log("alarmTime"+alarmTime);
-                console.log("currentTime"+currentTime);
                 if (alarmTime != null && currentTime != null) {
                     var alarmSeconds = to_minutes(alarmTime) * 60;
                     var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
@@ -198,7 +187,6 @@
                     } else if (alarmSeconds < currentSeconds) {
                         interval = ((sevenDaysSeconds - currentSeconds) + alarmSeconds) * 1000;
                     }
-                    console.log(interval);
                     clearTimeout(this.alarm);
                     this.alarm = setTimeout(this.openAlarm, interval);
                 }
@@ -234,6 +222,7 @@
         linear-gradient(75deg, #E4A972, #9941D8 ,#79ffff)fixed;
         border-radius: 15px;
         padding:0px 10px;
+      //  -webkit-app-region: drag;
     }
 
     .content {

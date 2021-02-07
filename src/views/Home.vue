@@ -115,9 +115,8 @@
                         $set: {
                             isEnable: update_is_enable
                         }
-                    }, {}, function(err, numReplaced) {
+                    }, {}, function(err) {
                         if (err !== null) console.error(err);
-                        console.log("isEnable:True," + 'Replaced:', numReplaced);
                         this.$emit('nextAlarm');
                     }.bind(this));
                 });

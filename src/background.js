@@ -4,6 +4,7 @@ import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+const path = require('path');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -17,15 +18,24 @@ protocol.registerSchemesAsPrivileged([
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    //width: 500,
-    //height: 600,
-   // resizable:false,
+    show: false,
+    width: 500,
+    height: 670,
+    titleBarStyle: 'hidden', //ヘッダーバーを透明にし、ボタンだけ表示
+    resizable:false,
+  //  transparent: true,
+   // frame: false,
+   // toolbar: false,
     webPreferences: {
-        preload: __dirname + '/preload.js',
+        preload: path.join(__dirname, './preload.js'),
         enableRemoteModule: true,
         nodeIntegration: false,
-        contextIsolation: false
+        contextIsolation: false,
+        devTools: false
     }
+  })
+  win.once('ready-to-show', () => {
+    win.show()
   })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -41,7 +51,7 @@ function createWindow() {
   win.on('closed', () => {
     win = null
   })
-  win.setMenu(menu);
+  win.setMenu(null);
 }
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

@@ -76,11 +76,8 @@
                 
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    db.update(query, update, options, (error, numOfDocs) => {
+                    db.update(query, update, options, (error) => {
                         if (error !== null) console.error(error);
-                        // numOfDocsには更新した件数が返る
-                        console.log(numOfDocs);
-                        // ドキュメント全体がupdateの内容に更新されている
                     });
                 });
             },

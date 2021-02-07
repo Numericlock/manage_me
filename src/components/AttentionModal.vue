@@ -38,7 +38,6 @@
         },
         methods: {
             submit() {
-                console.log(this.id);
                 this.$emit('submit',this.id);
                 this.close();
             },

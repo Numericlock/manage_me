@@ -97,7 +97,6 @@
                     document.getElementById("file").click();
             },
             sound_music_on_modal(path){
-                console.log("modalmodal"+path);
                 this.$emit('openModal',path);
             },
             open(path) {
@@ -113,15 +112,10 @@
                         if (err) throw err;
                     });
                     var title;
-                    //var src;
                     var artist;
                     var album;
                     var blob = new Blob([textfile]);
                     mm.parseBlob(blob).then(metadata => {
-                        //  var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
-                        // src = "background-image:url(data:;base64," + j + ")";
-                        console.log(metadata);
-                        console.log(this.file_path);
                         title = metadata.common.title;
                         artist = metadata.common.artist;
                         album = metadata.common.album;
@@ -132,12 +126,10 @@
                             "type": type,
                             "path": this.file_path,
                         };
-                        db.insert(dbData, (error, newDoc) => {
+                        db.insert(dbData, (error) => {
                             if (error !== null) console.error(error);
-                            console.log(newDoc);
                             this.getData();
                         });
-                        // artist = metadata.common.artist;
                     });
                 }
             },
@@ -145,7 +137,6 @@
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     var id = args[0];
-                    console.log(id);
                     db.update({
                         sound_id: id
                     },{
@@ -154,24 +145,20 @@
                         }
                     },{
                         multi: true 
-                    },function(err, numReplaced) {
+                    },function(err) {
                         if (err !== null) console.error(err);
-                        console.log('Replaced:', numReplaced);
                     }.bind(this));
                     db.find({
                         type: "alarm"
-                    },function(err, docs) {
-                        console.log(docs);
-                        docs.forEach((doc) => {
-                            console.log(doc.name);
-                        });
+                    },function(err) {
+                         if (err !== null) console.error(err);
                     }.bind(this));
                     db.remove({
                         _id: id
                     }, {
                         multi: true
-                    }, function(err, numRemoved) {
-                        console.log(numRemoved);
+                    }, function(err) {
+                         if (err !== null) console.error(err);
                         this.getData();
                     }.bind(this));
                 });
@@ -193,9 +180,8 @@
             sound_start(id) {
                 var calum = this.sound_docs.filter((v) => v._id == id);
                 var path = calum[0].path.replace(app.getPath('music'), '');
-                const textfile = fs.readFileSync(app.getPath('music') + path, (err, data) => {
+                const textfile = fs.readFileSync(app.getPath('music') + path, (err) => {
                     if (err) throw err;
-                    console.log(data);
                 });
                 var toArrayBuffer = function(buf) {
                     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
