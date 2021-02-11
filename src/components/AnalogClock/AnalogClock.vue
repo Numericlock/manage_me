@@ -69,7 +69,7 @@ export default {
         setTime() {
             this.intervalId = setInterval(() => {
                 this.time = new Date()
-            }, 10)
+            }, 1000)
         },
         hours_direction(hh,minutes,clock_type){
             let direction;
