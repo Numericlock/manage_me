@@ -4,10 +4,15 @@
 
 <script>
     export default {
-        props: [
-            'rotate',
-            'type'
-        ],
+        props: {
+            rotate:{
+                type:Number,
+                default:0
+            },
+            type:{
+                type:String
+            }
+        }
     }
 </script>
 

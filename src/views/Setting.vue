@@ -67,9 +67,9 @@
                     case 'is_dark':
                         query.key = key;
                         update.key = key;
-                        if(this.$store.state.is_dark) update.value = false;
+                        if(this.$store.state.isDark) update.value = false;
                         else update.value = true;
-                        this.$store.state.is_dark = update.value;
+                        this.$store.state.isDark = update.value;
                         break;
                         
                 }

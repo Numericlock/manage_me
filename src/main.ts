@@ -1,19 +1,19 @@
 import Vue from 'vue'
-import Vuex from 'vuex';
 import App from './App.vue'
-import './registerServiceWorker'
 import router from './router'
+import store from './store'
 import db from './datastore'
 Vue.prototype.$db = db;
-import is_empty from './utils/is_empty'
+import utils from './utils/index'
 Vue.config.productionTip = false
 import store from './store'
 Vue.prototype.$db = db
-Vue.use(Vuex);
-Vue.mixin(is_empty);
+Vue.mixin(utils);
+
+Vue.config.productionTip = false
 
 new Vue({
   router,
-store,
+  store,
   render: h => h(App)
 }).$mount('#app')

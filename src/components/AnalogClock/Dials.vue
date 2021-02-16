@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div :class="['dials', {'dark': is_dark},{'light': !is_dark}]" v-if="clock_type=='analog_12'"><!--12時間表記-->
+        <div :class="['dials', {'dark': isDark},{'light': !isDark}]" v-if="clockType=='analog_12'"><!--12時間表記-->
             <div 
                 v-for="n in 60" 
                 :key="n"
@@ -16,7 +16,7 @@
                 </p>
             </div>
         </div>
-        <div :class="['dials', {'dark': is_dark},{'light': !is_dark}]" v-if="clock_type=='analog_24'"><!--２4時間表記-->
+        <div :class="['dials', {'dark': isDark},{'light': !isDark}]" v-if="clockType=='analog_24'"><!--２4時間表記-->
            <div 
                 v-for="n in 60" 
                 :key="n"
@@ -44,31 +44,34 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue"
+export default Vue.extend({
     props:{
-        clock_type:{
+        clockType:{
+            type:String,
             default:'analog_12'
         },
-        is_dark:{
+        isDark:{
+            type:Boolean,
             default:false
         }
     },
     methods: {
-        top(val) {
+        top(val): number {
             return 150 - Math.cos(Math.PI / 30 * val) * 150
         },
 
-        left(val) {
+        left(val): number {
             return 150 + Math.sin(Math.PI / 30 * val) * 150
         },
 
         
-        rotate(val) {
+        rotate(val): number {
             return 6 * val
         }
     }
-}
+})
 </script>
 
 <style scoped>

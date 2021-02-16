@@ -1,6 +1,5 @@
 # manage_me
 
-
 ## Project setup
 ```
 npm install

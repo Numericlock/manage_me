@@ -1,43 +1,57 @@
 <template>
     <div class="wrapper">
-        <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:sound_name="sound_name" />
-        <!--<Header ref="nextAlarm2" v-bind:next_alarm_time="next_alarm_time" />-->
+        <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:soundName="soundName" />
+        <!--<Header ref="nextAlarm2" v-bind:nextAlarmTime="nextAlarmTime" />-->
         
         <div class="content">
             <transition name="costom-transition" :enter-active-class="transition.enter" :leave-active-class="transition.leave">
-                <router-view @nextAlarm='nextAlarm()' @openModal='openModal' v-bind:next_alarm_time="next_alarm_time" />
+                <router-view @nextAlarm='nextAlarm()' @openModal='openModal' v-bind:nextAlarmTime="nextAlarmTime" />
             </transition>
         </div>
         <Tabbar v-bind:carrentPage="carrentPage" />
     </div>
 </template>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.2/dist/sql-wasm.js'></script>
-<script>
+<script lang="ts">
+    import Vue from "vue"
     import AlarmModal from './components/Modal.vue'
     import Tabbar from './components/Tabbar.vue'
     import db from './datastore'
-    export default {
+    export type DataType = {
+        transition:{
+            enter:string;
+            leave:string;
+        },
+        title: string;
+        time: string;
+        soundPath: string;
+        soundName: string;
+        alarm: number;
+        carrentPage: string;
+        
+    }
+    export default Vue.extend({
         name: 'app',
         components: {
             AlarmModal,
             Tabbar
         },
-        data() {
+        data(): DataType {
             return {
                 transition: {
                     enter: '',
                     leave: '',
                 },
-                title: null,
-                time: null,
-                sound_path: null,
-                sound_name: null,
-                alarm: null,
+                title: '',
+                time: '',
+                soundPath: '',
+                soundName: '',
+                alarm: 0,
                 carrentPage: "Home"
             };
         },
         computed: {
-            next_alarm_time() {
+            nextAlarmTime(): string{
                 return this.$store.getters.nextTime;
             },
             clock_type(){
@@ -45,13 +59,13 @@
             }
         },
         methods: {
-            db_load_config: function() { //データベースからtype=configのデータを取得しstoreの対応する変数に入れる。
-                db.loadDatabase((error) => {
+            dbLoadConfig(): void { //データベースからtype=configのデータを取得しstoreの対応する変数に入れる。
+                db.loadDatabase((error:any) => {
                     if (error !== null) console.error(error);
                     db.find({
                         type: "config"
-                    }, function(err, docs) {
-                        docs.forEach((doc) =>{
+                    }, function(this:any,err:any, docs:any) {
+                        docs.forEach((doc:any) =>{
                             switch(doc.key){
                                 case 'clock_type':
                                     this.$store.state.clock_type = doc.value;
@@ -64,22 +78,22 @@
                     }.bind(this));
                 });
             },
-            nextAlarm: function() {
-                var dateNow = new Date();
-                var day = dateNow.getDay();
-                var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2))+1;
-                db.loadDatabase((error) => {
+            nextAlarm(): void {
+                const dateNow = new Date();
+                const day = dateNow.getDay();
+                const calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2))+1;
+                db.loadDatabase((error:any) => {
                     if (error !== null) console.error(error);
                     db.find({
                         type: "alarm",
                         isEnable: true
-                    }, function(err, docs) {
-                        var next_result = null;
-                        var schedules = [];
-                        docs.forEach((doc) => {
-                            var time = doc.time;
-                            var weeks = doc.weeks;
-                            for (var i = 0; i < weeks.length; i++) {
+                    }, function(this:any,err:any, docs:any) {
+                        let next_result:any = null;
+                        const schedules:any = [];
+                        docs.forEach((doc:any) => {
+                            const time = doc.time;
+                            const weeks = doc.weeks;
+                            for (let i = 0; i < weeks.length; i++) {
                                 schedules.push({
                                     "id": doc._id,
                                     "name": doc.name,
@@ -88,9 +102,9 @@
                                 });
                             }
                         });
-                        schedules.sort(function(a, b) {
-                            var one = a.time - calcNum;
-                            var two = b.time - calcNum;
+                        schedules.sort(function(a:any, b:any) {
+                            let one = a.time - calcNum;
+                            let two = b.time - calcNum;
                             if (Math.sign(a.time - calcNum) == -1) one = a.time - calcNum + 62359;
                             else one = a.time - calcNum;
                             if (Math.sign(two) == -1) two = b.time - calcNum + 62359;
@@ -100,15 +114,15 @@
                             return 0;
                         });
                         next_result = schedules[0];
-                        if (!this.is_empty(next_result)) {
-                            var strRepeat = this.zeroPadding(next_result.time, 5);
-                            this.$store.dispatch('next_alarm_refresh', {
+                        if (!this.isEmpty(next_result)) {
+                            const strRepeat = this.zeroPadding(next_result.time, 5);
+                            this.$store.dispatch('nextAlarmRefresh', {
                                 time: strRepeat,
                                 id: next_result.id
                             });
                         } else {
                             //ここにアラームが何も無い場合の処理を記述
-                            this.$store.dispatch('next_alarm_refresh', {
+                            this.$store.dispatch('nextAlarmRefresh', {
                                 time: null,
                                 id: null
                             });
@@ -116,87 +130,81 @@
                     }.bind(this));
                 });
             },
-            openAlarm:function(){
-                var days = this.$store.state.days;
-                var id = this.$store.state.nextAlarmId;
-                var alarmTime = this.$store.state.nextAlarmTime;
-                this.time = Number(alarmTime.substr(1, 2)) + ":" + alarmTime.substr(3, 2) + "(" + days[Number(alarmTime.substr(0, 1))] + ")";
-                db.loadDatabase((error) => {
+            openAlarm(): void{
+                const days = this.$store.state.days;
+                const id = this.$store.state.nextAlarmId;
+                const alarmTime = this.$store.state.nextAlarmTime;
+                (this as any).time = alarmTime.substr(1, 2) + ":" + alarmTime.substr(3, 2) + "(" + days[Number(alarmTime.substr(0, 1))] + ")";
+                db.loadDatabase((error:any) => {
                     if (error !== null) console.error(error);
                     db.findOne({
                         _id: id
-                    }, function(err, doc) {
+                    }, function(this:any, err:any, doc:any) {
                         this.title = doc.name;
-                        var Vm2 = this;
+                        const Vm2 = this;
                         db.findOne({
                             _id: doc.sound_id
-                        }, function(err, doc) {
+                        }, function(err:any, doc:any) {
                             if(doc){
-                                Vm2.sound_path = doc.path;
-                                Vm2.sound_name = doc.name;
+                                Vm2.soundPath = doc.path;
+                                Vm2.soundName = doc.name;
                                 Vm2.$refs.alarmModal.open(doc.path,true);
                             }else{
-                                Vm2.sound_path = '';
-                                Vm2.sound_name = '';
+                                Vm2.soundPath = '';
+                                Vm2.soundName = '';
                                 Vm2.$refs.alarmModal.open(null,true);
                             }
                         }.bind(Vm2));
                     }.bind(this));
                 });
-                this.nextAlarm();
+                (this as any).nextAlarm();
             },
-            openModal(...args){
-                this.$refs.alarmModal.open(args[0],false);
+            openModal(...args:any): void{
+                (this as any).$refs.alarmModal.open(args[0],false);
                 
             }
         },
-        watch: {
-            $route(to, from) {
+        watch: void{
+            $route(to:any, from:any) {
                 // アニメーションの切り替え
-                this.carrentPage = to.name;
+                (this as any).carrentPage = to.name;
                 if (to.meta.index == 7 || to.meta.index == 8) {
-                    this.transition.enter = 'animate__animated animate__fadeIn';
+                    (this as any).transition.enter = 'animate__animated animate__fadeIn';
                 } else if (to.meta.index > from.meta.index) {
-                    this.transition.enter = 'animate__animated animate__fadeInRight';
+                    (this as any).transition.enter = 'animate__animated animate__fadeInRight';
                 } else {
-                    this.transition.enter = 'animate__animated animate__fadeInLeft';
+                    (this as any).transition.enter = 'animate__animated animate__fadeInLeft';
                 }
             },
-            next_alarm_time(val, old) {
-                var alarmTime = this.$store.state.nextAlarmTime;
-                var dateNow = new Date();
-                var dayOfWeekStr = this.$store.state.days[dateNow.getDay()];
-                var hours   = ("0" + dateNow.getHours()).slice(-2);
-                var minutes = ("0" + dateNow.getMinutes()).slice(-2);
-                var seconds = ("0" + dateNow.getSeconds()).slice(-2);
-                var currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
+            nextAlarmTime(): void {
+                const alarmTime = (this as any).$store.state.nextAlarmTime;
+                const dateNow = new Date();
+                const dayOfWeekStr = (this as any).$store.state.days[dateNow.getDay()];
+                const hours   = ("0" + dateNow.getHours()).slice(-2);
+                const minutes = ("0" + dateNow.getMinutes()).slice(-2);
+                const seconds = ("0" + dateNow.getSeconds()).slice(-2);
+                const currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
                 if (alarmTime != null && currentTime != null) {
-                    var alarmSeconds = to_minutes(alarmTime) * 60;
-                    var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
-                    var sevenDaysSeconds = 604800;//１週間の秒数
-
-                    function to_minutes(time) {
-                        var result = (Number(time.substr(0, 1)) * 24 * 60) +
-                            (Number(time.substr(1, 2)) * 60) +
-                            Number(time.substr(3, 2));
-                        return result;
-                    }
-                    var interval = 0;
+                    const alarmSeconds = (this as any).toMinutes(alarmTime) * 60;
+                    const currentSeconds = ((this as any).toMinutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
+                    const sevenDaysSeconds = 604800;//１週間の秒数
+                    let interval:number = 0;
                     if (currentSeconds < alarmSeconds) {
                         interval = (alarmSeconds - currentSeconds) * 1000;
                     } else if (alarmSeconds < currentSeconds) {
                         interval = ((sevenDaysSeconds - currentSeconds) + alarmSeconds) * 1000;
                     }
-                    clearTimeout(this.alarm);
-                    this.alarm = setTimeout(this.openAlarm, interval);
+                    clearTimeout((this as any).alarm);
+                    (this as any).alarm = setTimeout((this as any).openAlarm, interval);
                 }
+                
             }
         },
-        mounted: function() {
-            this.nextAlarm();
-            this.db_load_config();
+        mounted(): void {
+            (this as any).nextAlarm();
+            (this as any).dbLoadConfig();
         },
-    };
+    });
 
 </script>
 <style lang="scss">

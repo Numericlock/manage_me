@@ -1,79 +1,86 @@
 <template>
     <div class="clock">
-        <dials :clock_type="clock_type" :is_dark="is_dark"/>
+        <dials :clockType="clockType" :isDark="isDark"/>
         <hand class="hand seconds" type="seconds"       :rotate="seconds"/>
         <hand class="hand minutes" type="minutes"       :rotate="minutes" />
         <hand class="hand hours"   type="hours"         :rotate="hours"/>
-        <hand class="hand minutes" type="alarm-minutes" v-if="next_alarm_time" :rotate="alarm_minutes"/>
-        <hand class="hand hours"   type="alarm-hours"   v-if="next_alarm_time" :rotate="alarm_hours"/>
+        <hand class="hand minutes" type="alarm-minutes" v-if="nextAlarmTime" :rotate="alarmMinutes"/>
+        <hand class="hand hours"   type="alarm-hours"   v-if="nextAlarmTime" :rotate="alarmHours"/>
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue"
 import Hand from './Hand'
 import Dials from './Dials'
 import moment from 'moment'
-
-export default {
+    
+export type DataType = {
+    intervalId: number;
+    time: Date;
+}
+export default Vue.extend({
     components: {
         Hand,
         Dials
     },
     props:{
-        clock_type:{
+        clockType:{
+            type: String,
             default:'analog_12'
         },
-        is_dark:{
+        isDark:{
+            type: Boolean,
             default:false
         }
     },
-    data() {
+    data(): DataType {
         return {
-            intervalId: undefined,
-            time: undefined,
+            intervalId:0 ,
+            time: new Date()
         }
     },
 
     computed: {
-        seconds() {
-            let ss = moment(this.time).seconds();
-            let nn = moment(this.time).milliseconds();
+        seconds(): number {
+            const ss = moment(this.time).seconds();
+            const nn = moment(this.time).milliseconds();
             return 6 * (ss + nn / 1000);
         },
 
-        minutes() {
-            let mm = moment(this.time).minutes();
+        minutes(): number {
+            const mm = moment(this.time).minutes();
             return 6 * (mm + this.seconds / 360);
         },
 
-        hours() {
-            let hh = moment(this.time).hours();
-            return this.hours_direction(hh,this.minutes,this.clock_type);
+        hours(): number {
+            const hh = moment(this.time).hours();
+            return this.hoursDirection(hh,this.minutes,this.clockType);
         },
         
-        alarm_minutes() {
-            let mm = Number(this.$store.state.nextAlarmTime.substr(3,2));
+        alarmMinutes(): number {
+            const mm = Number(this.$store.state.nextAlarmTime.substr(3,2));
             return 6 * mm;
         },
         
-        alarm_hours(){
-            let hh = Number(this.$store.state.nextAlarmTime.substr(1,2));
-            return this.hours_direction(hh,this.alarm_minutes,this.clock_type);
+        alarmHours(): number {
+            const hh = Number(this.$store.state.nextAlarmTime.substr(1,2));
+            return this.hoursDirection(hh,this.alarmMinutes,this.clockType);
         },
-        next_alarm_time() {
-            return this.$store.getters.nextTime;
+        nextAlarmTime(): number {
+            return this.$store.state.nextAlarmTime;
         }
     },
 
     methods: {
-        setTime() {
+        setTime(): void {
             this.intervalId = setInterval(() => {
                 this.time = new Date()
             }, 1000)
         },
-        hours_direction(hh,minutes,clock_type){
+        hoursDirection(hh,minutes,clockType): number{
             let direction;
-            switch(clock_type){
+            switch(clockType){
                 case 'analog_12':
                     direction = 30 * (hh + minutes / 360);
                     break;
@@ -85,14 +92,14 @@ export default {
         }
     },
 
-    mounted() {
+    mounted(): void {
         this.setTime()
     },
 
-    beforeDestroy() {
+    beforeDestroy(): void {
         clearInterval(this.intervalId)
     },
-}
+})
 </script>
 
 <style scoped>
