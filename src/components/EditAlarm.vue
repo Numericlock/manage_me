@@ -1,10 +1,10 @@
 <template>
     <div v-show="display">
-        <AttentionModal @submit='removeAlarm' ref="AttentionModal" v-bind:text="text" :is_dark="is_dark"/>
+        <AttentionModal @submit='removeAlarm' ref="AttentionModal" v-bind:text="text" :isDark="isDark"/>
         <div @click="displayControl(false)">
             <ModalBackground transparency="0.1"/>
         </div>
-        <div :class="['aleam-add-wrapper', {'dark': is_dark},{'light': !is_dark}]">
+        <div :class="['aleam-add-wrapper', {'dark': isDark},{'light': !isDark}]">
             <div class="title">
                 <span v-if="this.state=='edit'">Edit Alarm</span>
                 <span v-if="this.state=='add'">New Aleam</span>
@@ -14,7 +14,7 @@
                     <label>
                         Name
                     </label>
-                    <input type="text" class="alarm-input" id="aleamName" placeholder="アラーム名" v-model="alarm_name" @input="changeCheck()">
+                    <input type="text" class="alarm-input" id="aleamName" placeholder="アラーム名" v-model="alarmName" @input="changeCheck()">
                 </div>
                 <div class="input-wrapper">
                     <label>
@@ -30,7 +30,7 @@
                         Sound
                     </label>
                     <div>
-                        <multiselect v-model="sound_value" @input="changeCheck()" deselect-label="Can't remove this value" placeholder="デフォルト" :options="sound_options" :searchable="false" :allow-empty="true">
+                        <multiselect v-model="soundValue" @input="changeCheck()" deselect-label="Can't remove this value" placeholder="デフォルト" :options="soundOptions" :searchable="false" :allow-empty="true">
                         </multiselect>
                     </div>
                 </div>
@@ -43,9 +43,9 @@
                     </div>
                 </div>
                 <div class="submit-wrapper" :class="['submit-wrapper',{'submit-wrapper-add': this.state=='add'}]">
-                    <span v-if="this.state=='edit'" @click="modal_open()">削除</span>
+                    <span v-if="this.state=='edit'" @click="modalOpen()">削除</span>
                     <transition v-if="this.state=='edit'" name="fade">
-                        <span v-if="is_change" @click="updateAlarm()">適用</span>
+                        <span v-if="isChange" @click="updateAlarm()">適用</span>
                     </transition>
                     <span v-if="this.state=='add'" @click="alarmAdd">作成</span>
                 </div>
@@ -77,100 +77,100 @@
         },
         data() {
             return {
-                alarm_name: null,
+                alarmName: null,
                 time: {
                     HH: '00',
                     mm: '00'
                 },
                 value: [],
-                alarm_id:null,
-                sound_value: null,
+                alarmId:null,
+                soundValue: null,
                 options: ['毎日', '月', '火', '水', '木', '金', '土', '日'],
-                sound_options: [],
-                sound_data: [],
-                sound_ids: [],
-                is_enable: true, //alarmの初期値
-                is_change: false,
-                is_mounted:false,
+                soundOptions: [],
+                soundData: [],
+                soundIds: [],
+                isEnable: true, //alarmの初期値
+                isChange: false,
+                isMounted:false,
                 text:"削除してもいいの？",
                 display:false
             }
         },
         computed: {
-            is_dark:function(){
-                return this.$store.state.is_dark;
+            isDark:function(){
+                return this.$store.state.isDark;
             }
         },
         methods: {
             initialize(){
-                this.alarm_name = "";
+                this.alarmName = "";
                 this.time.HH = '00';
                 this.time.mm = '00';
                 this.value = [];
-                this.sound_value = [];
+                this.soundValue = [];
                 
                 
-                this.is_mounted = false;
-                this.is_change = false;
+                this.isMounted = false;
+                this.isChange = false;
             },
             removeAlarm() {
                 db.remove({
-                    _id: this.alarm_id
+                    _id: this.alarmId
                 }, {
                     multi: true
                 }, function() {
                     this.$emit('run');
                 }.bind(this));
             },
-            modal_open(id){
+            modalOpen(id){
                 this.$refs.AttentionModal.open(id);  
             },
             alarmAdd() {
                 //this.$emit('setCron', "a");
                // db.remove({}, { multi: true });
-                if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
-                    var type = "alarm";
-                    var time = String(this.time.HH) + String(this.time.mm);
-                    var days = this.$store.state.days;
-                    var weeks_string_array = this.value;
-                    var weeks_array = [];
-                    var weeks,sound_id;
-                    if(!this.is_empty(this.sound_value))sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
-                    for (var i = 0; i < weeks_string_array.length; i++) {
-                        if(weeks_string_array[i] != "毎日")weeks_array.push(days.indexOf(weeks_string_array[i]));
+                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.value)) {
+                    const type = "alarm";
+                    const time = String(this.time.HH) + String(this.time.mm);
+                    const days = this.$store.state.days;
+                    const weeksStringArray = this.value;
+                    const weeksArray = [];
+                    let weeks,soundId;
+                    if(!this.isEmpty(this.soundValue))soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
+                    for (let i = 0; i < weeksStringArray.length; i++) {
+                        if(weeksStringArray[i] != "毎日")weeksArray.push(days.indexOf(weeksStringArray[i]));
                     }
-                    weeks_array.sort(function(a, b) {
+                    weeksArray.sort(function(a, b) {
                         if (a < b) return -1;
                         if (a > b) return 1;
                         return 0;
                     });
-                    for (i = 0; i < weeks_array.length; i++) {
-                        if (weeks) weeks += String(weeks_array[i]);
-                        else weeks = String(weeks_array[i]);
+                    for (let i = 0; i < weeksArray.length; i++) {
+                        if (weeks) weeks += String(weeksArray[i]);
+                        else weeks = String(weeksArray[i]);
                     }
-                    var dbData = {
+                    const dbData = {
                         "type": type,
-                        "name": this.alarm_name,
+                        "name": this.alarmName,
                         "time": time,
                         "weeks": weeks,
-                        "sound_id": sound_id,
-                        "isEnable": this.is_enable
+                        "soundId": soundId,
+                        "isEnable": this.isEnable
                     };
                     db.insert(dbData, function(err, newDoc) {
                         if (err !== null) console.error(err);
-                        var dateNow = new Date();
-                        var days = this.$store.state.days;
-                        var nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
-                        var currentTime = String(dateNow.getDay()) + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2);
-                        for (var i = 0; i < this.value.length; i++) {
-                            var time = Number(days.indexOf(this.value[i]) + this.time.HH + this.time.mm);
+                        const dateNow = new Date();
+                        const days = this.$store.state.days;
+                        let nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
+                        const currentTime = String(dateNow.getDay()) + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2);
+                        for (let i = 0; i < this.value.length; i++) {
+                            const time = Number(days.indexOf(this.value[i]) + this.time.HH + this.time.mm);
                             if (currentTime < time && time < nextAlarm) {
                                 nextAlarm = time;
                             } else if (nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time) {
                                 nextAlarm = time;
                             }
                         }
-                        var strNextAlarm = this.zeroPadding(nextAlarm, 5);
+                        const strNextAlarm = this.zeroPadding(nextAlarm, 5);
                         this.$store.dispatch('next_alarm_refresh', {
                             time: strNextAlarm,
                             id: newDoc._id
@@ -186,34 +186,34 @@
             },
             
             updateAlarm: function() {
-                if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
-                    var id = this.alarm_id;
-                    var sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
-                    var type = "alarm";
-                    var time = String(this.time.HH) + String(this.time.mm);
-                    var days = this.$store.state.days;
-                    var weeks_string_array = this.value;
-                    var weeks_array = [];
-                    var weeks;
-                    for (var i = 0; i < weeks_string_array.length; i++) {
-                        if(weeks_string_array[i] != "毎日")weeks_array.push(days.indexOf(weeks_string_array[i]));
+                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.value)) {
+                    const id = this.alarmId;
+                    const soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
+                    const type = "alarm";
+                    const time = String(this.time.HH) + String(this.time.mm);
+                    const days = this.$store.state.days;
+                    const weeksStringArray = this.value;
+                    const weeksArray = [];
+                    let weeks;
+                    for (let i = 0; i < weeksStringArray.length; i++) {
+                        if(weeksStringArray[i] != "毎日")weeksArray.push(days.indexOf(weeksStringArray[i]));
                     }
-                    weeks_array.sort(function(a, b) {
+                    weeksArray.sort(function(a, b) {
                         if (a < b) return -1;
                         if (a > b) return 1;
                         return 0;
                     });
-                    for (i = 0; i < weeks_array.length; i++) {
-                        if (weeks) weeks += String(weeks_array[i]);
-                        else weeks = String(weeks_array[i]);
+                    for (let i = 0; i < weeksArray.length; i++) {
+                        if (weeks) weeks += String(weeksArray[i]);
+                        else weeks = String(weeksArray[i]);
                     }
-                    var dbData = {
+                    const dbData = {
                         "type": type,
-                        "name": this.alarm_name,
+                        "name": this.alarmName,
                         "time": time,
                         "weeks": weeks,
-                        "sound_id": sound_id,
-                        "isEnable": this.is_enable
+                        "soundId": soundId,
+                        "isEnable": this.isEnable
                     };
                     db.update({
                         _id: id
@@ -231,7 +231,7 @@
                 this.changeCheck();
                 if (option === '毎日') {
                     this.value.length = 0;
-                    for (var i = 1; i < this.options.length; i++) {
+                    for (let i = 1; i < this.options.length; i++) {
                         this.value.push(this.options[i]);
                     }
                 }
@@ -239,7 +239,7 @@
             
             onRemove(option) {
                 this.changeCheck();
-                var value = this.value;
+                const value = this.value;
                 if (option === '毎日') value.length = 0;
                 else if (value.indexOf('毎日') != -1) this.value.splice(value.indexOf('毎日'), 1);
             },
@@ -252,7 +252,7 @@
             },
             
             setId(id){
-              this.alarm_id = id;  
+              this.alarmId = id;  
             },
             
             getSoundData() {
@@ -263,10 +263,10 @@
                     }, function(err, docs) {
                         if (err !== null) console.error(err);
                         docs.forEach((doc) => {
-                            this.sound_options.push(doc.name);
-                            this.sound_ids.push(doc._id);
+                            this.soundOptions.push(doc.name);
+                            this.soundIds.push(doc._id);
                         })
-                        this.sound_data = docs;
+                        this.soundData = docs;
                     }.bind(this));
                 });
             },
@@ -278,48 +278,42 @@
                         _id: id
                     }, function(err, doc) {
                         if (err !== null) console.error(err);
-                        var days = this.$store.state.days;
-                        this.alarm_name = doc.name;
+                        const days = this.$store.state.days;
+                        this.alarmName = doc.name;
                         this.time.HH = doc.time.substr(0, 2);
                         this.time.mm = doc.time.substr(2, 2);
-                        for (var i = 0; i < doc.weeks.length; i++) {
+                        for (let i = 0; i < doc.weeks.length; i++) {
                             this.value.push(days[Number(doc.weeks.substr(i, 1))]);
                             if (i == 6) this.value.push("毎日");
                         }
-                        if(!this.is_empty(doc.sound_id)){
+                        if(!this.isEmpty(doc.soundId)){
                             db.findOne({
-                                _id: doc.sound_id
+                                _id: doc.soundId
                             },function(err, doc) {
-                                this.sound_value = doc.name;
-                                this.is_mounted = true;
+                                this.soundValue = doc.name;
+                                this.isMounted = true;
                             }.bind(this));
                         }else{
-                            this.is_mounted = true;
+                            this.isMounted = true;
                         }
                     }.bind(this));
                 });
             },
             changeCheck() {
                 if(this.state=='edit'){
-                    if(this.is_mounted && !this.is_change){
-                        if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
-                            this.is_change = true;
+                    if(this.isMounted && !this.isChange){
+                        if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.value)) {
+                            this.isChange = true;
                         } else {
-                            this.is_change = false;
+                            this.isChange = false;
                         }
                     }
                 }
             }
         },
-        mounted: function() {
-            
-        },
         created: function() {
             this.getSoundData();
-            //this.getAlarmData(this.alarm_id);
-        },
-        watch: {
-
+            //this.getAlarmData(this.alarmId);
         }
     }
 

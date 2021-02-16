@@ -58,16 +58,16 @@ export default Vue.extend({
         }
     },
     methods: {
-        top(val): number {
+        top(val: number): number {
             return 150 - Math.cos(Math.PI / 30 * val) * 150
         },
 
-        left(val): number {
+        left(val: number): number {
             return 150 + Math.sin(Math.PI / 30 * val) * 150
         },
 
         
-        rotate(val): number {
+        rotate(val: number): number {
             return 6 * val
         }
     }

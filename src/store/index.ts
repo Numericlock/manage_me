@@ -6,7 +6,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         //alarmTimes: [],
-        nextAlarmTime: null,
+        nextAlarmTime: '',
         nextAlarmId:null,
         currentTime: null,
         alarmCount:null,
@@ -16,7 +16,7 @@ export default new Vuex.Store({
     },
     getters: {
         nextTime (state) {
-            const nextAlarmTime = state.nextAlarmTime;
+            const nextAlarmTime: string = state.nextAlarmTime;
             let strTime;
             if (nextAlarmTime != null) {
                 const dayOfWeekStr = state.days[Number(nextAlarmTime.substr(0,1))];

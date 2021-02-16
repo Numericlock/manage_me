@@ -56,7 +56,7 @@
             return {
                 alarmData: [],
                 addAlarm:false,
-                modalType:null,
+                modalType:'',
             }
         },
         computed: {
@@ -74,32 +74,32 @@
         },
         methods: {
             getData(): void {
-                db.loadDatabase((error) => {
+                db.loadDatabase((error: string) => {
                     if (error !== null) console.error(error);
                 });
                 //db.find({}, function(err, docs) {
                 db.find({
                     type: "alarm"
-                }, function(err, docs) {
+                }, function(err: string, docs: array) {
                     this.alarmData = docs;
                     const days = this.$store.state.days;
-                    docs.forEach((doc) => {
+                    docs.forEach((doc: array) => {
                         const weeks = doc.weeks;
                         const time = doc.time;
                         const displayTime = time.substr(0, 2) + ":" + time.substr(2, 2);
-                        let weeksString: string;
+                        let weeksString = '';
                         if (weeks == "0123456") {
                             weeksString = "毎日";
                         } else {
                             for (let i = 0; i < weeks.length; i++) {
-                                if (!weeksString) weeksString = days[Number(weeks.substr(i, 1))];
+                                if (weeksString == '') weeksString = days[Number(weeks.substr(i, 1))];
                                 else weeksString += "/" + days[Number(weeks.substr(i, 1))];
                             }
                         }
                         doc.weeksString = weeksString;
                         doc.displayTime = displayTime;
                     });
-                }.bind(this));
+                }.bind(this as any));
                 db.count({}, (error, numOfDocs) => {
                     this.$store.dispatch('alarmCount', {
                         count: numOfDocs

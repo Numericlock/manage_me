@@ -3,7 +3,7 @@
         <div class="modal-wrapper" @click="close">
             <ModalBackground transparency="0.1" zIndex="1100"/>
         </div>
-        <div :class="['modal-content', {'dark': is_dark},{'light': !is_dark}]">
+        <div :class="['modal-content', {'dark': isDark},{'light': !isDark}]">
             <div class="text-wrapper">
                 <span>{{ this.text }}</span>
             </div>
@@ -22,7 +22,7 @@
             text:{
                 default:"本当に削除しても良いですか？"
             },
-            is_dark:{
+            isDark:{
                 default:false
             },
         },

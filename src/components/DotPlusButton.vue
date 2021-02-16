@@ -1,7 +1,7 @@
 <template>
     <div class="plus-button">
-        <button type="button" :class="['dot-radius', {'dark': is_dark},{'light': !is_dark},{'dark-dot-ring': !is_dark}]" >
-            <span class="plus"  :class="['plus', {'dark-background-color': !is_dark}]"></span>
+        <button type="button" :class="['dot-radius', {'dark': isDark},{'light': !isDark},{'dark-dot-ring': !isDark}]" >
+            <span class="plus"  :class="['plus', {'dark-background-color': !isDark}]"></span>
         </button>
     </div> 
 </template>
@@ -9,7 +9,7 @@
 <script>
     export default {
         props:{
-            is_dark:{
+            isDark:{
                 default:false
             }
         },

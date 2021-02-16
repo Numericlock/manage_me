@@ -40,7 +40,6 @@ export default Vue.extend({
             time: new Date()
         }
     },
-
     computed: {
         seconds(): number {
             const ss = moment(this.time).seconds();
@@ -74,11 +73,11 @@ export default Vue.extend({
 
     methods: {
         setTime(): void {
-            this.intervalId = setInterval(() => {
+            this.intervalId = window.setInterval(() => {
                 this.time = new Date()
             }, 1000)
         },
-        hoursDirection(hh,minutes,clockType): number{
+        hoursDirection(hh: number,minutes: number,clockType: string): number{
             let direction;
             switch(clockType){
                 case 'analog_12':
@@ -86,6 +85,9 @@ export default Vue.extend({
                     break;
                 case 'analog_24':
                     direction = 30 * ((hh + minutes / 360)/2);
+                    break;
+                default:
+                    direction = 0;
                     break;
             }
             return direction;
