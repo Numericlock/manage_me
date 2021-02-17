@@ -11,8 +11,8 @@
 
 <script lang="ts">
 import Vue from "vue"
-import Hand from './Hand'
-import Dials from './Dials'
+import Hand from './Hand.vue'
+import Dials from './Dials.vue'
 import moment from 'moment'
     
 export type DataType = {

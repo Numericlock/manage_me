@@ -21,7 +21,7 @@
         transition:{
             enter:string;
             leave:string;
-        },
+        };
         title: string;
         time: string;
         soundPath: string;
@@ -54,8 +54,8 @@
             nextAlarmTime(): string{
                 return this.$store.getters.nextTime;
             },
-            clock_type(){
-                return this.$store.state.clock_type;
+            clockType(){
+                return this.$store.state.clockType;
             }
         },
         methods: {
@@ -67,11 +67,11 @@
                     }, function(this:any,err:any, docs:any) {
                         docs.forEach((doc:any) =>{
                             switch(doc.key){
-                                case 'clock_type':
-                                    this.$store.state.clock_type = doc.value;
+                                case 'clockType':
+                                    this.$store.state.clockType = doc.value;
                                     break;
-                                case 'is_dark':
-                                    this.$store.state.is_dark = doc.value;
+                                case 'isDark':
+                                    this.$store.state.isDark = doc.value;
                                     break;
                             }
                         });
@@ -114,7 +114,7 @@
                             return 0;
                         });
                         next_result = schedules[0];
-                        if (!this.isEmpty(next_result)) {
+                        if (next_result) {
                             const strRepeat = this.zeroPadding(next_result.time, 5);
                             this.$store.dispatch('nextAlarmRefresh', {
                                 time: strRepeat,

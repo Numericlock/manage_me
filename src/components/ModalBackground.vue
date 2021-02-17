@@ -4,6 +4,7 @@
 
 <script>
     export default {
+        name: 'ModalBackground',
         props:{
             transparency:{
                 default:0.7

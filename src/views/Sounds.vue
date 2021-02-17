@@ -1,22 +1,22 @@
 <template>
     <div class="sounds-setting-wrapper">
         <div class="add-button-wrapper">
-            <div @click="begin_file_input">
-                <DotSoundAddButton :is_dark="is_dark"/>
-                <input type="file" id="file" onchange="uv.style.display='inline-block'; uv.value = this.value;" v-on:change="file_out" />
+            <div @click="beginFileInput">
+                <DotSoundAddButton :isDark="isDark"/>
+                <input type="file" id="file" onchange="uv.style.display='inline-block'; uv.value = this.value;" v-on:change="fileOut" />
             </div>
         </div>
-        <div :class="['SoundAndVisualizer-wrapper', {'dark': is_dark},{'light': !is_dark}]">
+        <div :class="['SoundAndVisualizer-wrapper', {'dark': isDark},{'light': !isDark}]">
             <SoundAndVisualizer ref="SoundAndVisualizer" />
         </div>
-        <div :class="['table-wrapper', {'dark': is_dark},{'light': !is_dark}]">
+        <div :class="['table-wrapper', {'dark': isDark},{'light': !isDark}]">
             <table>
                 <tr>
                     <th>Artist</th>
                     <th>title</th>
                     <th>album</th>
                 </tr>
-                <tr v-for="(sound, key) in sound_docs" :key="key">
+                <tr v-for="(sound, key) in soundDocs" :key="key">
                     <td>{{ sound.artist }}</td>
                     <td>{{ sound.name }}</td>
                     <td>{{ sound.album }}</td>
@@ -31,7 +31,7 @@
                         </svg>
                     </td>
                     <td class="td-button">
-                        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" @click = "modal_open(sound._id)">
+                        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" @click = "modalOpen(sound._id)">
                             <g>
                                 <polygon class="st0" points="367.375,183.607 312.486,238.495 257.592,183.607 240.087,201.105 294.982,256 240.087,310.894 
         257.592,328.393 312.486,273.498 367.375,328.393 384.88,310.894 329.985,256 384.88,201.105 	"></polygon>
@@ -48,55 +48,64 @@
                 </tr>
             </table>
         </div>
-        <AttentionModal @submit='sound_delete' ref="AttentionModal" v-bind:text="text"/>
+        <AttentionModal @submit='soundDelete' ref="AttentionModal" v-bind:text="text"/>
     </div>
 </template>
-<script>
+<script lang="ts">
+    import Vue from "vue"
     import SoundAndVisualizer from '../components/SoundAndVisualizer.vue'
     import AttentionModal from '../components/AttentionModal.vue'
     import DotSoundAddButton from '../components/DotSoundAddButton.vue'
     const app = window.app;
     const fs = window.fs;
     import db from '../datastore'
-    const mm = require('music-metadata-browser');
-    export default {
+    import mm from 'music-metadata-browser';
+    export type DataType = {
+        toggleText: string;
+        fileName: string;
+        filePath: string;
+        soundDocs: string[];
+        source: string;
+        text: string;
+    }
+    export default Vue.extend({
         name: 'Sounds',
         components: {
             AttentionModal,
             DotSoundAddButton,
             SoundAndVisualizer
         },
-        data() {
+        data(): DataType {
             return {
                 toggleText: "OFF",
-                file_name: null,
-                file_path: null,
-                sound_docs: [],
+                fileName: '',
+                filePath: '',
+                soundDocs: [],
                 source: null,
                 text:"削除してもいいの？"
             }
         },
         computed:{
-            is_dark:function(){
-                return this.$store.state.is_dark;
+            isDark:function(){
+                return this.$store.state.isDark;
             }  
         },
         methods: {
-            toggle: function() {
+            toggle(): void {
                 if (this.toggleText == "OFF") this.toggleText = "ON";
                 else this.toggleText = "OFF";
             },
-            file_out: function(e) {
+            fileOut: function(e) {
                 const files = e.target.files || e.dataTransfer.files;
-                this.file_name = files[0].name;
-                this.file_path = files[0].path;
+                this.fileName = files[0].name;
+                this.filePath = files[0].path;
                 // fileReader.readAsArrayBuffer(e.target.files[0]);
-                this.sound_register();
+                this.soundRegister();
             },
-            begin_file_input(){
+            beginFileInput(){
                     document.getElementById("file").click();
             },
-            sound_music_on_modal(path){
+            soundMusicOnModal(path){
                 this.$emit('openModal',path);
             },
             open(path) {
@@ -105,26 +114,26 @@
             close: function() {
                 this.$refs.SoundAndVisualizer.kill();
             },
-            sound_register: function() {
-                if (this.file_path) {
-                    var type = "sound";
-                    const textfile = fs.readFileSync(this.file_path, (err) => {
+            soundRegister: function() {
+                if (this.filePath) {
+                    const type = "sound";
+                    const textfile = fs.readFileSync(this.filePath, (err) => {
                         if (err) throw err;
                     });
-                    var title;
-                    var artist;
-                    var album;
-                    var blob = new Blob([textfile]);
+                    let title;
+                    let artist;
+                    let album;
+                    const blob = new Blob([textfile]);
                     mm.parseBlob(blob).then(metadata => {
                         title = metadata.common.title;
                         artist = metadata.common.artist;
                         album = metadata.common.album;
-                        var dbData = {
+                        const dbData = {
                             "name": title,
                             "artist": artist,
                             "album": album,
                             "type": type,
-                            "path": this.file_path,
+                            "path": this.filePath,
                         };
                         db.insert(dbData, (error) => {
                             if (error !== null) console.error(error);
@@ -133,15 +142,15 @@
                     });
                 }
             },
-            sound_delete(...args){
+            soundDelete(...args){
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
-                    var id = args[0];
+                    const id = args[0];
                     db.update({
-                        sound_id: id
+                        soundId: id
                     },{
                         $set: {
-                            "sound_id": null
+                            "soundId": null
                         }
                     },{
                         multi: true 
@@ -163,31 +172,31 @@
                     }.bind(this));
                 });
             },
-            modal_open(id){
+            modalOpen(id){
                 this.$refs.AttentionModal.open(id);  
             },
             getData: function() {
-                var sound_docs = null;
+                let soundDocs = null;
                 //db.remove({type:"sound"}, { multi: true });
                 db.find({
                     type: "sound"
                 }, function(err, docs) {
-                    sound_docs = docs;
-                    this.sound_docs = sound_docs;
+                    soundDocs = docs;
+                    this.soundDocs = soundDocs;
                 }.bind(this));
-                this.sound_docs = sound_docs;
+                this.soundDocs = soundDocs;
             },
-            sound_start(id) {
-                var calum = this.sound_docs.filter((v) => v._id == id);
-                var path = calum[0].path.replace(app.getPath('music'), '');
+            soundStart(id) {
+                const calum = this.soundDocs.filter((v) => v._id == id);
+                const path = calum[0].path.replace(app.getPath('music'), '');
                 const textfile = fs.readFileSync(app.getPath('music') + path, (err) => {
                     if (err) throw err;
                 });
-                var toArrayBuffer = function(buf) {
+                const toArrayBuffer = function(buf) {
                     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
                 }
-                var audioContext = new AudioContext;
-                var analyser = audioContext.createAnalyser();
+                const audioContext = new AudioContext;
+                const analyser = audioContext.createAnalyser();
                 analyser.fftSize = 128;
                 analyser.connect(audioContext.destination);
                 audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer) {
@@ -200,7 +209,7 @@
                     this.source.start(0);
                 }.bind(this));
             },
-            sound_stop: function() {
+            soundStop: function() {
                 this.source.stop();
             }
         },
@@ -208,7 +217,7 @@
             this.getData();
             this.$emit('nextAlarm');
         }
-    }
+    })
 
 </script>
 <style lang="scss">

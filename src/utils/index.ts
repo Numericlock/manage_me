@@ -1,6 +1,7 @@
-export default {
+import Vue from 'vue'
+export default Vue.extend({
     methods: {
-        isEmpty(_var){
+        isEmpty(_var: string): boolean{
             if (_var == null) {
                 // typeof null -> object : for hack a bug of ECMAScript
                 return true;
@@ -19,7 +20,7 @@ export default {
                                 return (_var.valueOf().length === 0);
                             } else
                             if (typeof _var.valueOf() !== 'object') {
-                                return this.is_empty(_var.valueOf());
+                                return this.isEmpty(_var.valueOf());
                             } else {
                                 return true;
                             }
@@ -40,14 +41,14 @@ export default {
                 }
             }
         },
-        zeroPadding(num, length){
+        zeroPadding(num, length): string{
             return ('0000000000' + num).slice(-length);
         },
-        toMinutes(time){
+        toMinutes(time): number{
             const result = (Number(time.substr(0, 1)) * 24 * 60) +
                 (Number(time.substr(1, 2)) * 60) +
                 Number(time.substr(3, 2));
             return result;
         }
     }
-}
+})

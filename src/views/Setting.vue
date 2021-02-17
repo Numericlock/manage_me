@@ -1,15 +1,15 @@
 <template>
     <div class="setting-wrapper">
-        <div :class="['title', {'dark-color': is_dark},{'light-color': !is_dark}]">
+        <div :class="['title', {'dark-color': isDark},{'light-color': !isDark}]">
             <span>Setting</span>
         </div>
-        <div :class="['settings', {'dark': is_dark},{'light': !is_dark}]">
+        <div :class="['settings', {'dark': isDark},{'light': !isDark}]">
             <div class="input-wrapper">
                 <label>
                     DarkThema
                 </label>
                 <div class="block aleam-istrue-button">
-                    <input data-index="0" id="darkthema" type="checkbox" @click="update_config('is_dark')" :checked="is_dark"/>
+                    <input data-index="0" id="darkthema" type="checkbox" @click="updateConfig('isDark')" :checked="isDark"/>
                     <label for="darkthema"></label>
                 </div>
             </div>
@@ -18,59 +18,65 @@
                     Clock Type
                 </label>
                 <div>
-                    <multiselect v-model="clock_type_value" @input="update_config('clock_type')" deselect-label="Can't remove this value" placeholder="デフォルト" :options="clock_types" :searchable="false" :allow-empty="false">
+                    <multiselect v-model="clockTypeValue" @input="updateConfig('clockType')" deselect-label="Can't remove this value" placeholder="デフォルト" :options="clockTypes" :searchable="false" :allow-empty="false">
                     </multiselect>
                 </div>
             </div>
         </div>
     </div>
 </template>
-<script>
+<script lang="ts">
+    import Vue from "vue"
     import Multiselect from 'vue-multiselect';
     import db from '../datastore'
-    export default {
+    export type DataType = {
+        toggleText: string;
+        clockTypeValue: string;
+        clockTypes: string[];
+        clockTypesDbName: string[];
+        text: string;
+    }
+    export default Vue.extend({
         name: 'Setting',
         components:{
              Multiselect
         },
-        data() {
+        data(): DataType {
             return {
                 toggleText: "OFF",
-                file_name: null,
-                file_path: null,
-                sound_docs: [],
-                source: null,
-                clock_type_value:null,
-                clock_types:['Analog Clock 12','Analog Clock 24'],
-                clock_types_db_name:['analog_12','analog_24'],
-               // is_dark_bool:null
+                clockTypeValue:null,
+                clockTypes:['Analog Clock 12','Analog Clock 24'],
+                clockTypesDbName:['analog_12','analog_24'],
+               // isDark_bool:null
             }
         },
         computed: {
-            is_dark:function(){
-                return this.$store.state.is_dark;
+            isDark:function(){
+                return this.$store.state.isDark;
             }
         },
         methods: {
-            update_config(key){
+            updateConfig(key){
                 const query = {type: 'config'};
                 const update = {type: 'config'};
                 const options = {upsert: true};
                 switch(key){
-                    case 'clock_type':
-                        var clock_type = this.clock_types_db_name[this.clock_types.indexOf(this.clock_type_value)];
+                    case 'clockType': {
+                        const clockType = this.clockTypesDbName[this.clockTypes.indexOf(this.clockTypeValue)];
                         query.key = key;
                         update.key = key;
-                        update.value =  clock_type;
-                        this.$store.state.clock_type = clock_type;
+                        update.value =  clockType;
+                        this.$store.state.clockType = clockType;
                         break;
-                    case 'is_dark':
+                    }
+                    case 'isDark': {
                         query.key = key;
                         update.key = key;
                         if(this.$store.state.isDark) update.value = false;
                         else update.value = true;
                         this.$store.state.isDark = update.value;
                         break;
+                    }
                         
                 }
                 
@@ -81,16 +87,16 @@
                     });
                 });
             },
-            get_config_data(){
-                this.clock_type_value =  this.clock_types[this.clock_types_db_name.indexOf(this.$store.state.clock_type)];
-               // this.is_dark_bool = this.$store.state.is_dark;
+            getConfigData(){
+                this.clockTypeValue =  this.clockTypes[this.clockTypesDbName.indexOf(this.$store.state.clockType)];
+               // this.isDark_bool = this.$store.state.isDark;
             }
         },
         mounted() {
             this.$emit('nextAlarm');
-            this.get_config_data();
+            this.getConfigData();
         }
-    }
+    })
 
 </script>
 

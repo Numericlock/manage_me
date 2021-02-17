@@ -2,10 +2,10 @@
     <div v-show="display">
         <ModalBackground transparency="0.1" zIndex="10000"/>
         <transition name="fade">
-            <div :class="['modal-content', {'dark': is_dark},{'light': !is_dark}]">
+            <div :class="['modal-content', {'dark': isDark},{'light': !isDark}]">
                 <span class="title" v-if="isAlarm">{{ title }}</span>
                 <span class="time" v-if="isAlarm">{{ time }}</span>
-                <SoundAndVisualizer ref="SoundAndVisualizer" :hide_playback_button=true />
+                <SoundAndVisualizer ref="SoundAndVisualizer" :hidePlaybackButton=true />
                 <div>
                     <button class="close-button" @click="close()">STOP</button>
                 </div>
@@ -26,14 +26,14 @@
             };
         },
         computed: {
-            is_dark:function(){
-                return this.$store.state.is_dark;
+            isDark:function(){
+                return this.$store.state.isDark;
             }
         },
         methods: {
-            open(path,is_alarm) {
+            open(path,isAlarm) {
                 this.$refs.SoundAndVisualizer.sound(path);
-                this.isAlarm = is_alarm;
+                this.isAlarm = isAlarm;
                 this.displayControl(true);
             },
             close: function() {

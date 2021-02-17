@@ -8,9 +8,9 @@
             <canvas id="visualizer" ref="visualizer" :style="src" ></canvas>
         </div>
         <div>
-            <span>{{ sound_artist }}</span><span class="sound-title">{{ sound_title }}</span>
+            <span>{{ soundArtist }}</span><span class="sound-title">{{ soundTitle }}</span>
         </div>
-        <div v-if="hide_playback_button==false">
+        <div v-if="hidePlaybackButton==false">
             <div :class="['playback' ,{'pause': playbackNow}]" @click="suspend()"></div>
         </div>
     </div>
@@ -19,15 +19,16 @@
 <script>
     import LoadingAnimation from './LoadingAnimation/LoadingAnimation.vue'
     const fs = window.fs;
-    const mm = require('music-metadata-browser');
-    var source, animationId;
-    var audioContext;
+   // const mm = require('music-metadata-browser');
+    import mm from 'music-metadata-browser'
+    let source, animationId;
+    let audioContext;
     export default {
         components: {
             LoadingAnimation
         },
         props:{
-            hide_playback_button:{
+            hidePlaybackButton:{
                 default:false,
             }
         },
@@ -35,13 +36,13 @@
             return {
                 loading: false,
                 src: null,
-                sound_title: null,
-                sound_artist: null,
+                soundTitle: null,
+                soundArtist: null,
                 playbackNow:false
             };
         },
         methods:{
-            playback_toggle(){
+            playbackToggle(){
                 if(this.playbackNow)this.playbackNow = false;
                 else this.playbackNow = true;
             },
@@ -71,10 +72,10 @@
             sound(path) {
                 this.loading = true;
                 audioContext = new AudioContext;
-                var canvas = this.$refs.visualizer;
-                var canvasContext = canvas.getContext('2d');
+                const canvas = this.$refs.visualizer;
+                const canvasContext = canvas.getContext('2d');
                 canvasContext.transform(1, 0, 0, -1, 0, 150);
-                var textfile;
+                let textfile;
 
                 if(path){
                    textfile = fs.readFileSync(path, (err) => {
@@ -85,58 +86,55 @@
                         if (err) throw err;
                     });
                 }
-                var blob = new Blob([textfile]);
+                const blob = new Blob([textfile]);
 
                 mm.parseBlob(blob).then(metadata => {
                     if(metadata.common.picture){
-                        var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
+                        const j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
                         this.src = "background-image:url(data:;base64," + j + ")";
-                        this.sound_title = metadata.common.title;
-                        this.sound_artist = metadata.common.artist;
+                        this.soundTitle = metadata.common.title;
+                        this.soundArtist = metadata.common.artist;
                     }else{
                         //デフォルトアートの設定
                         this.src = 'background-image: url("../../public/img/default1.png")';
                     }
                 });
-                var toArrayBuffer = function(buf) {
+                const toArrayBuffer = function(buf) {
                     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
                 }
-                    var analyser = audioContext.createAnalyser();
-                    analyser.fftSize = 512;
-                    analyser.connect(audioContext.destination);
-
-                    audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer) {
-                        if (source) {
-                            source.stop();
-                            cancelAnimationFrame(animationId);
-                        }
-                        if(audioContext){
-                            source = audioContext.createBufferSource();
-                            source.buffer = buffer;
-                            source.loop = true;
-                            source.connect(analyser);
-                            source.start(0);
-                            this.loading = false;
-                            this.playbackNow = true;
-                        }else{
-                            this.loading = false;
-                        }
-                        animationId = requestAnimationFrame(render);
-                    }.bind(this));
-                
-
-                var render = function() {
-                    var spectrums = new Uint8Array(analyser.frequencyBinCount);
+                const analyser = audioContext.createAnalyser();
+                analyser.fftSize = 512;
+                analyser.connect(audioContext.destination);
+                const render = function() {
+                    const spectrums = new Uint8Array(analyser.frequencyBinCount);
                     analyser.getByteFrequencyData(spectrums);
 
                     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-                    for (var i = 0, len = spectrums.length; i < len; i++) {
+                    for (let i = 0, len = spectrums.length; i < len; i++) {
                         canvasContext.fillRect(i * 10, 0, 5, spectrums[i] / 2);
                         canvasContext.fillStyle = "#fff";
                     }
 
-                    animationId = requestAnimationFrame(render);
+                    //animationId = requestAnimationFrame(render);
                 };
+                audioContext.decodeAudioData(toArrayBuffer(textfile), function(buffer) {
+                    if (source) {
+                        source.stop();
+                        cancelAnimationFrame(animationId);
+                    }
+                    if(audioContext){
+                        source = audioContext.createBufferSource();
+                        source.buffer = buffer;
+                        source.loop = true;
+                        source.connect(analyser);
+                        source.start(0);
+                        this.loading = false;
+                        this.playbackNow = true;
+                    }else{
+                        this.loading = false;
+                    }
+                    animationId = requestAnimationFrame(render);
+                }.bind(this));
             }  
         }
     }

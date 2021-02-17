@@ -21,7 +21,7 @@
                         Repeat
                     </label>
                     <div>
-                        <multiselect v-model="value"  :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :searchable="false" :allow-empty="false" placeholder="複数選択" @select="onSelect" @remove="onRemove">
+                        <multiselect v-model="dayValue"  :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :searchable="false" :allow-empty="false" placeholder="複数選択" @select="onSelect" @remove="onRemove">
                         </multiselect>
                     </div>
                 </div>
@@ -54,18 +54,39 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+    import Vue from "vue"
     import Multiselect from 'vue-multiselect'
     import VueTimepicker from 'vue2-timepicker'
     import AttentionModal from './AttentionModal.vue'
     import 'vue2-timepicker/dist/VueTimepicker.css'
-    import ModalBackground from './ModalBackground'
+    import ModalBackground from './ModalBackground.vue'
     import db from '../datastore'
-
-    export default {
+    export type DataType = {
+        time: {
+            HH: string;
+            mm: string;
+        };
+        alarmName: string;
+        dayValue: string[];
+        alarmId: string;
+        soundValue: string;
+        options: string[];
+        soundOptions: string[];
+        soundData: string[];
+        soundIds: string[];
+        isEnable: boolean;
+        isChange: boolean;
+        isMounted: boolean;
+        text: string;
+        display: boolean;
+        
+    }
+    export default Vue.extend({
         name: 'alarmDetail',
         props: {
             state:{
+                type: String,
                 default:'add'
             }
         },
@@ -75,16 +96,16 @@
             AttentionModal,
             ModalBackground
         },
-        data() {
+        data(): DataType {
             return {
-                alarmName: null,
+                alarmName: '',
                 time: {
                     HH: '00',
                     mm: '00'
                 },
-                value: [],
-                alarmId:null,
-                soundValue: null,
+                dayValue: [],
+                alarmId:'',
+                soundValue: '',
                 options: ['毎日', '月', '火', '水', '木', '金', '土', '日'],
                 soundOptions: [],
                 soundData: [],
@@ -97,42 +118,40 @@
             }
         },
         computed: {
-            isDark:function(){
+            isDark(): boolean{
                 return this.$store.state.isDark;
             }
         },
         methods: {
-            initialize(){
+            initialize(): void{
                 this.alarmName = "";
                 this.time.HH = '00';
                 this.time.mm = '00';
-                this.value = [];
-                this.soundValue = [];
-                
-                
+                this.dayValue = [];
+                this.soundValue = '';
                 this.isMounted = false;
                 this.isChange = false;
             },
-            removeAlarm() {
+            removeAlarm(): void{
                 db.remove({
                     _id: this.alarmId
                 }, {
                     multi: true
-                }, function() {
+                }, () => {
                     this.$emit('run');
                 }.bind(this));
             },
-            modalOpen(id){
+            modalOpen(id: string): void{
                 this.$refs.AttentionModal.open(id);  
             },
-            alarmAdd() {
+            alarmAdd(): void{
                 //this.$emit('setCron', "a");
                // db.remove({}, { multi: true });
-                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.value)) {
+                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.dayValue)) {
                     const type = "alarm";
                     const time = String(this.time.HH) + String(this.time.mm);
                     const days = this.$store.state.days;
-                    const weeksStringArray = this.value;
+                    const weeksStringArray = this.dayValue;
                     const weeksArray = [];
                     let weeks,soundId;
                     if(!this.isEmpty(this.soundValue))soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
@@ -156,14 +175,14 @@
                         "soundId": soundId,
                         "isEnable": this.isEnable
                     };
-                    db.insert(dbData, function(err, newDoc) {
+                    db.insert(dbData, function(err: string, newDoc: string) {
                         if (err !== null) console.error(err);
                         const dateNow = new Date();
                         const days = this.$store.state.days;
                         let nextAlarm = this.$store.state.nextAlarmTime; //次のアラーム設定時刻 0~62359
                         const currentTime = String(dateNow.getDay()) + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2);
-                        for (let i = 0; i < this.value.length; i++) {
-                            const time = Number(days.indexOf(this.value[i]) + this.time.HH + this.time.mm);
+                        for (let i = 0; i < this.dayValue.length; i++) {
+                            const time = Number(days.indexOf(this.dayValue[i]) + this.time.HH + this.time.mm);
                             if (currentTime < time && time < nextAlarm) {
                                 nextAlarm = time;
                             } else if (nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time) {
@@ -185,20 +204,20 @@
                 }
             },
             
-            updateAlarm: function() {
-                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.value)) {
+            updateAlarm(): void{
+                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.dayValue)) {
                     const id = this.alarmId;
                     const soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
                     const type = "alarm";
                     const time = String(this.time.HH) + String(this.time.mm);
                     const days = this.$store.state.days;
-                    const weeksStringArray = this.value;
+                    const weeksStringArray = this.dayValue;
                     const weeksArray = [];
                     let weeks;
                     for (let i = 0; i < weeksStringArray.length; i++) {
                         if(weeksStringArray[i] != "毎日")weeksArray.push(days.indexOf(weeksStringArray[i]));
                     }
-                    weeksArray.sort(function(a, b) {
+                    weeksArray.sort(function(a: number, b: number) {
                         if (a < b) return -1;
                         if (a > b) return 1;
                         return 0;
@@ -230,23 +249,23 @@
             onSelect(option) {
                 this.changeCheck();
                 if (option === '毎日') {
-                    this.value.length = 0;
+                    this.dayValue.length = 0;
                     for (let i = 1; i < this.options.length; i++) {
-                        this.value.push(this.options[i]);
+                        this.dayValue.push(this.options[i]);
                     }
                 }
             },
             
             onRemove(option) {
                 this.changeCheck();
-                const value = this.value;
-                if (option === '毎日') value.length = 0;
-                else if (value.indexOf('毎日') != -1) this.value.splice(value.indexOf('毎日'), 1);
+                const dayValue = this.dayValue;
+                if (option === '毎日') dayValue.length = 0;
+                else if (dayValue.indexOf('毎日') != -1) this.dayValue.splice(dayValue.indexOf('毎日'), 1);
             },
             
             displayControl( bool ){
                 if(this.state == 'edit'){
-                    this.value=[];
+                    this.dayValue=[];
                 }
                 this.display = bool;  
             },
@@ -283,8 +302,8 @@
                         this.time.HH = doc.time.substr(0, 2);
                         this.time.mm = doc.time.substr(2, 2);
                         for (let i = 0; i < doc.weeks.length; i++) {
-                            this.value.push(days[Number(doc.weeks.substr(i, 1))]);
-                            if (i == 6) this.value.push("毎日");
+                            this.dayValue.push(days[Number(doc.weeks.substr(i, 1))]);
+                            if (i == 6) this.dayValue.push("毎日");
                         }
                         if(!this.isEmpty(doc.soundId)){
                             db.findOne({
@@ -302,7 +321,7 @@
             changeCheck() {
                 if(this.state=='edit'){
                     if(this.isMounted && !this.isChange){
-                        if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.value)) {
+                        if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.dayValue)) {
                             this.isChange = true;
                         } else {
                             this.isChange = false;
@@ -315,7 +334,7 @@
             this.getSoundData();
             //this.getAlarmData(this.alarmId);
         }
-    }
+    })
 
 </script>
 <style lang="scss">

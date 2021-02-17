@@ -1,5 +1,5 @@
 <template>
-    <div :class="['tabbar', {'dark': is_dark},{'light': !is_dark}]">
+    <div :class="['tabbar', {'dark': isDark},{'light': !isDark}]">
         <router-link class="tabbar-icon-wrapper" to="/">
             <svg version="1.1" viewBox="0 0 512 512" 
                  :class="[{'carrent-page-icon': carrentPage == 'Home'}]">
@@ -50,8 +50,8 @@
             return {}
         },
         computed:{
-            is_dark:function(){
-                return this.$store.state.is_dark;
+            isDark:function(){
+                return this.$store.state.isDark;
             }
         },
         components: {}

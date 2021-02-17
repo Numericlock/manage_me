@@ -1,6 +1,6 @@
 <template>
     <div class="add-button">
-        <button type="button" :class="['dot-radius', {'dark': is_dark},{'light': !is_dark}]" >
+        <button type="button" :class="['dot-radius', {'dark': isDark},{'light': !isDark}]" >
             <svg
                xmlns:dc="http://purl.org/dc/elements/1.1/"
                xmlns:cc="http://creativecommons.org/ns#"
@@ -57,7 +57,7 @@
 <script>
     export default {
         props:{
-            is_dark:{
+            isDark:{
                 default:false
             }
         },

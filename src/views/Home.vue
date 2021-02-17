@@ -41,7 +41,7 @@
     import EditAlarm from '../components/EditAlarm.vue'
     import db from '../datastore'
     export type DataType = {
-        alarmData: array;
+        alarmData: string[];
         addAlarm: boolean;
         modalType: string;
     }
@@ -80,7 +80,7 @@
                 //db.find({}, function(err, docs) {
                 db.find({
                     type: "alarm"
-                }, function(err: string, docs: array) {
+                }, function(err: string, docs: string[]) {
                     this.alarmData = docs;
                     const days = this.$store.state.days;
                     docs.forEach((doc: array) => {
@@ -99,7 +99,7 @@
                         doc.weeksString = weeksString;
                         doc.displayTime = displayTime;
                     });
-                }.bind(this as any));
+                }.bind(this));
                 db.count({}, (error, numOfDocs) => {
                     this.$store.dispatch('alarmCount', {
                         count: numOfDocs
@@ -107,7 +107,7 @@
                 });
                 this.$emit('nextAlarm');
             },
-            toggleChange(id, isEnable): void {
+            toggleChange(id: string, isEnable: boolean): void {
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     let updateIsEnable;
@@ -130,7 +130,7 @@
                 this.$refs.EditAlarm.initialize();
                 this.$refs.EditAlarm.displayControl(true);
             },
-            alarmDetailModal(id): void{
+            alarmDetailModal(id: string): void{
                 this.modalType = 'edit';
                 this.$refs.EditAlarm.setId(id);
                 this.$refs.EditAlarm.getAlarmData(id);
