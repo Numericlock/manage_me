@@ -120,6 +120,7 @@
                     multi: true
                 }, function() {
                     this.$emit('run');
+                    this.displayControl(false);
                 }.bind(this));
             },
             modal_open(id){
