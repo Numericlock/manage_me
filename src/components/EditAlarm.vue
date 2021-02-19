@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 <div class="submit-wrapper" :class="['submit-wrapper',{'submit-wrapper-add': this.state=='add'}]">
-                    <span v-if="this.state=='edit'" @click="modalOpen()">削除</span>
+                    <span v-if="this.state=='edit'" @click="modalOpen(alarmId)">削除</span>
                     <transition v-if="this.state=='edit'" name="fade">
                         <span v-if="isChange" @click="updateAlarm()">適用</span>
                     </transition>
@@ -137,24 +137,28 @@
                     _id: this.alarmId
                 }, {
                     multi: true
-                }, () => {
+                }, function() {
                     this.$emit('run');
+                    this.displayControl(false);
                 }.bind(this));
             },
             modalOpen(id: string): void{
                 this.$refs.AttentionModal.open(id);  
             },
+            modalClose(): void{
+                this.$refs.AttentionModal.close();  
+            },
             alarmAdd(): void{
                 //this.$emit('setCron', "a");
                // db.remove({}, { multi: true });
-                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.dayValue)) {
+                if (this.alarmName && this.time && this.dayValue) {
                     const type = "alarm";
                     const time = String(this.time.HH) + String(this.time.mm);
                     const days = this.$store.state.days;
                     const weeksStringArray = this.dayValue;
                     const weeksArray = [];
                     let weeks,soundId;
-                    if(!this.isEmpty(this.soundValue))soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
+                    if(this.soundValue != '')soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
                     for (let i = 0; i < weeksStringArray.length; i++) {
                         if(weeksStringArray[i] != "毎日")weeksArray.push(days.indexOf(weeksStringArray[i]));
                     }
@@ -190,7 +194,7 @@
                             }
                         }
                         const strNextAlarm = this.zeroPadding(nextAlarm, 5);
-                        this.$store.dispatch('next_alarm_refresh', {
+                        this.$store.dispatch('nextAlarmRefresh', {
                             time: strNextAlarm,
                             id: newDoc._id
                         });
@@ -205,7 +209,8 @@
             },
             
             updateAlarm(): void{
-                if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.dayValue)) {
+                
+                if(!this.alarmName && !this.time && this.dayValue) {
                     const id = this.alarmId;
                     const soundId = this.soundIds[this.soundOptions.indexOf(this.soundValue, 0)];
                     const type = "alarm";
@@ -305,7 +310,7 @@
                             this.dayValue.push(days[Number(doc.weeks.substr(i, 1))]);
                             if (i == 6) this.dayValue.push("毎日");
                         }
-                        if(!this.isEmpty(doc.soundId)){
+                        if(doc.soundId){
                             db.findOne({
                                 _id: doc.soundId
                             },function(err, doc) {
@@ -321,7 +326,7 @@
             changeCheck() {
                 if(this.state=='edit'){
                     if(this.isMounted && !this.isChange){
-                        if (!this.isEmpty(this.alarmName) && !this.isEmpty(this.time) && !this.isEmpty(this.dayValue)) {
+                        if (this.alarmName && this.time && this.dayValue) {
                             this.isChange = true;
                         } else {
                             this.isChange = false;

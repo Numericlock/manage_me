@@ -86,7 +86,7 @@
             }
         },
         computed:{
-            isDark:function(){
+            isDark(): void{
                 return this.$store.state.isDark;
             }  
         },
@@ -95,26 +95,26 @@
                 if (this.toggleText == "OFF") this.toggleText = "ON";
                 else this.toggleText = "OFF";
             },
-            fileOut: function(e) {
+            fileOut(e: any): void {
                 const files = e.target.files || e.dataTransfer.files;
                 this.fileName = files[0].name;
                 this.filePath = files[0].path;
                 // fileReader.readAsArrayBuffer(e.target.files[0]);
                 this.soundRegister();
             },
-            beginFileInput(){
+            beginFileInput(): void{
                     document.getElementById("file").click();
             },
-            soundMusicOnModal(path){
+            soundMusicOnModal(path): void{
                 this.$emit('openModal',path);
             },
-            open(path) {
+            open(path): void{
                 this.$refs.SoundAndVisualizer.sound(path);
             },
-            close: function() {
+            close(): void{
                 this.$refs.SoundAndVisualizer.kill();
             },
-            soundRegister: function() {
+            soundRegister(): void{
                 if (this.filePath) {
                     const type = "sound";
                     const textfile = fs.readFileSync(this.filePath, (err) => {
@@ -142,7 +142,7 @@
                     });
                 }
             },
-            soundDelete(...args){
+            soundDelete(...args): void{
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     const id = args[0];
@@ -172,10 +172,10 @@
                     }.bind(this));
                 });
             },
-            modalOpen(id){
+            modalOpen(id): void{
                 this.$refs.AttentionModal.open(id);  
             },
-            getData: function() {
+            getData(): void{
                 let soundDocs = null;
                 //db.remove({type:"sound"}, { multi: true });
                 db.find({
@@ -186,7 +186,7 @@
                 }.bind(this));
                 this.soundDocs = soundDocs;
             },
-            soundStart(id) {
+            soundStart(id): void{
                 const calum = this.soundDocs.filter((v) => v._id == id);
                 const path = calum[0].path.replace(app.getPath('music'), '');
                 const textfile = fs.readFileSync(app.getPath('music') + path, (err) => {
@@ -209,11 +209,11 @@
                     this.source.start(0);
                 }.bind(this));
             },
-            soundStop: function() {
+            soundStop(): void{
                 this.source.stop();
             }
         },
-        mounted() {
+        mounted(): void {
             this.getData();
             this.$emit('nextAlarm');
         }

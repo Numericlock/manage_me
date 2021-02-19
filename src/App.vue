@@ -102,7 +102,7 @@
                                 });
                             }
                         });
-                        schedules.sort(function(a:any, b:any) {
+                        schedules.sort((a:any, b:any)=> {
                             let one = a.time - calcNum;
                             let two = b.time - calcNum;
                             if (Math.sign(a.time - calcNum) == -1) one = a.time - calcNum + 62359;

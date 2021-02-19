@@ -36,7 +36,7 @@
                 this.isAlarm = isAlarm;
                 this.displayControl(true);
             },
-            close: function() {
+            close() {
                 this.$refs.SoundAndVisualizer.close();
                 this.displayControl(false);
             },
