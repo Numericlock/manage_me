@@ -32,8 +32,7 @@
     .dark{
         background: rgba( 62, 62, 62, 0.50 );
         box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 5.0px );
-        -webkit-backdrop-filter: blur( 5.0px );
+
     }
     .dark-background-color{
         background:$darkColor !important;
@@ -83,7 +82,7 @@
                 width: 4px;
                 height: $button_size/2;
                 left: $button_size*0.37;
-                top: 23.5%;
+                top: 0%;
                 border-radius: 20px;
                 transition: background-color 0.3s,filter 0.6s;
             }

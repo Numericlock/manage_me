@@ -214,7 +214,7 @@
 <style lang="scss">
     .add-button-wrapper{
         position: absolute;
-        top:15px;
+        top:40px;
         left:15px;
         div{
             position: relative;

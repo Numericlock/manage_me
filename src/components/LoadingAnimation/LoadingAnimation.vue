@@ -1,8 +1,6 @@
 <template>
     <div class="loading" :style="{'height': height +'px'}">
-        <Rectangle 
-            v-for="n in RectangleQuantity"
-            :key="n" :delay="n" :width="width" :margin="margin" :color="color"/>
+        <Rectangle v-for="n in RectangleQuantity" :key="n" :delay="n" :width="width" :margin="margin" :color="color" />
     </div>
 </template>
 
@@ -10,23 +8,23 @@
     import Rectangle from './Rectangle'
     export default {
         props: {
-            RectangleQuantity:{
+            RectangleQuantity: {
                 type: Number,
-                default:8
+                default: 8
             },
-            height:{
+            height: {
                 type: Number,
-                default:40  
+                default: 40
             },
-            width:{
+            width: {
                 type: Number,
-                default:5
+                default: 5
             },
-            margin:{
+            margin: {
                 type: Number,
-                default:3  
+                default: 3
             },
-            color:{
+            color: {
                 default: "white",
             }
         },
@@ -37,7 +35,6 @@
 </script>
 
 <style>
-
     .loading {
         position: absolute;
         top: 50%;
@@ -46,6 +43,7 @@
         display: flex;
         align-items: center;
     }
+
     @keyframes loading {
         0% {
             height: 0;

@@ -7,14 +7,9 @@
 
 <script>
     export default {
-        props:['delay','width','margin','color'],
-        data () {
-            return {
-            }
-        },
-        components: {
-        }
+        props: ['delay', 'width', 'margin', 'color'],
     }
+
 </script>
 
 <style scoped>
@@ -23,4 +18,5 @@
         border-radius: 10px;
         animation: loading 0.8s infinite;
     }
+
 </style>

@@ -1,8 +1,8 @@
 <template>
     <div v-show="display">
-        <AttentionModal @submit='removeAlarm' ref="AttentionModal" v-bind:text="text" :is_dark="is_dark"/>
+        <AttentionModal @submit='removeAlarm' ref="AttentionModal" v-bind:text="text" :is_dark="is_dark" />
         <div @click="displayControl(false)">
-            <ModalBackground transparency="0.1"/>
+            <ModalBackground transparency="0.1" />
         </div>
         <div :class="['aleam-add-wrapper', {'dark': is_dark},{'light': !is_dark}]">
             <div class="title">
@@ -21,7 +21,7 @@
                         Repeat
                     </label>
                     <div>
-                        <multiselect v-model="value"  :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :searchable="false" :allow-empty="false" placeholder="複数選択" @select="onSelect" @remove="onRemove">
+                        <multiselect v-model="value" :options="options" :multiple="true" :close-on-select="false" :clear-on-select="false" :searchable="false" :allow-empty="false" placeholder="複数選択" @select="onSelect" @remove="onRemove">
                         </multiselect>
                     </div>
                 </div>
@@ -65,8 +65,8 @@
     export default {
         name: 'alarmDetail',
         props: {
-            state:{
-                default:'add'
+            state: {
+                default: 'add'
             }
         },
         components: {
@@ -83,7 +83,7 @@
                     mm: '00'
                 },
                 value: [],
-                alarm_id:null,
+                alarm_id: null,
                 sound_value: null,
                 options: ['毎日', '月', '火', '水', '木', '金', '土', '日'],
                 sound_options: [],
@@ -91,25 +91,25 @@
                 sound_ids: [],
                 is_enable: true, //alarmの初期値
                 is_change: false,
-                is_mounted:false,
-                text:"削除してもいいの？",
-                display:false
+                is_mounted: false,
+                text: "削除してもいいの？",
+                display: false
             }
         },
         computed: {
-            is_dark:function(){
+            is_dark: function() {
                 return this.$store.state.is_dark;
             }
         },
         methods: {
-            initialize(){
+            initialize() {
                 this.alarm_name = "";
                 this.time.HH = '00';
                 this.time.mm = '00';
                 this.value = [];
                 this.sound_value = [];
-                
-                
+
+
                 this.is_mounted = false;
                 this.is_change = false;
             },
@@ -123,22 +123,20 @@
                     this.displayControl(false);
                 }.bind(this));
             },
-            modal_open(id){
-                this.$refs.AttentionModal.open(id);  
+            modal_open(id) {
+                this.$refs.AttentionModal.open(id);
             },
             alarmAdd() {
-                //this.$emit('setCron', "a");
-               // db.remove({}, { multi: true });
                 if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                     var type = "alarm";
                     var time = String(this.time.HH) + String(this.time.mm);
                     var days = this.$store.state.days;
                     var weeks_string_array = this.value;
                     var weeks_array = [];
-                    var weeks,sound_id;
-                    if(!this.is_empty(this.sound_value))sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
+                    var weeks, sound_id;
+                    if (!this.is_empty(this.sound_value)) sound_id = this.sound_ids[this.sound_options.indexOf(this.sound_value, 0)];
                     for (var i = 0; i < weeks_string_array.length; i++) {
-                        if(weeks_string_array[i] != "毎日")weeks_array.push(days.indexOf(weeks_string_array[i]));
+                        if (weeks_string_array[i] != "毎日") weeks_array.push(days.indexOf(weeks_string_array[i]));
                     }
                     weeks_array.sort(function(a, b) {
                         if (a < b) return -1;
@@ -176,16 +174,12 @@
                             time: strNextAlarm,
                             id: newDoc._id
                         });
-                        // this.nextAlarm();
                         this.$emit('run');
                     }.bind(this));
-                    //this.$emit('nextAlarm');
                     this.displayControl(false);
-                } else {
-                   // console.log("value is empty");
                 }
             },
-            
+
             updateAlarm: function() {
                 if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                     var id = this.alarm_id;
@@ -197,7 +191,7 @@
                     var weeks_array = [];
                     var weeks;
                     for (var i = 0; i < weeks_string_array.length; i++) {
-                        if(weeks_string_array[i] != "毎日")weeks_array.push(days.indexOf(weeks_string_array[i]));
+                        if (weeks_string_array[i] != "毎日") weeks_array.push(days.indexOf(weeks_string_array[i]));
                     }
                     weeks_array.sort(function(a, b) {
                         if (a < b) return -1;
@@ -227,7 +221,7 @@
                     this.displayControl(false);
                 }
             },
-            
+
             onSelect(option) {
                 this.changeCheck();
                 if (option === '毎日') {
@@ -237,25 +231,25 @@
                     }
                 }
             },
-            
+
             onRemove(option) {
                 this.changeCheck();
                 var value = this.value;
                 if (option === '毎日') value.length = 0;
                 else if (value.indexOf('毎日') != -1) this.value.splice(value.indexOf('毎日'), 1);
             },
-            
-            displayControl( bool ){
-                if(this.state == 'edit'){
-                    this.value=[];
+
+            displayControl(bool) {
+                if (this.state == 'edit') {
+                    this.value = [];
                 }
-                this.display = bool;  
+                this.display = bool;
             },
-            
-            setId(id){
-              this.alarm_id = id;  
+
+            setId(id) {
+                this.alarm_id = id;
             },
-            
+
             getSoundData() {
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
@@ -287,22 +281,22 @@
                             this.value.push(days[Number(doc.weeks.substr(i, 1))]);
                             if (i == 6) this.value.push("毎日");
                         }
-                        if(!this.is_empty(doc.sound_id)){
+                        if (!this.is_empty(doc.sound_id)) {
                             db.findOne({
                                 _id: doc.sound_id
-                            },function(err, doc) {
+                            }, function(err, doc) {
                                 this.sound_value = doc.name;
                                 this.is_mounted = true;
                             }.bind(this));
-                        }else{
+                        } else {
                             this.is_mounted = true;
                         }
                     }.bind(this));
                 });
             },
             changeCheck() {
-                if(this.state=='edit'){
-                    if(this.is_mounted && !this.is_change){
+                if (this.state == 'edit') {
+                    if (this.is_mounted && !this.is_change) {
                         if (!this.is_empty(this.alarm_name) && !this.is_empty(this.time) && !this.is_empty(this.value)) {
                             this.is_change = true;
                         } else {
@@ -312,18 +306,10 @@
                 }
             }
         },
-        mounted: function() {
-            
-        },
         created: function() {
             this.getSoundData();
-            //this.getAlarmData(this.alarm_id);
-        },
-        watch: {
-
         }
     }
-
 </script>
 <style lang="scss">
     .aleam-add-wrapper {
@@ -334,15 +320,15 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        z-index:1000;
+        z-index: 1000;
 
         .title {
             display: flex;
             justify-content: center;
-            height:35px;
+            height: 35px;
             font-size: 30px;
             flex-grow: 1;
-            padding-top:10px;
+            padding: 10px 0px;
         }
 
         form {
@@ -468,11 +454,13 @@
                     outline: none;
                 }
             }
-            .submit-wrapper-add{
+
+            .submit-wrapper-add {
                 justify-content: flex-end;
             }
         }
     }
+
     .fade-enter-active,
     .fade-leave-active {
         will-change: opacity;

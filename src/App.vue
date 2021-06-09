@@ -1,14 +1,15 @@
 <template>
-    <div class="wrapper">
-        <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:sound_name="sound_name" />
-        <!--<Header ref="nextAlarm2" v-bind:next_alarm_time="next_alarm_time" />-->
-        
-        <div class="content">
-            <transition name="costom-transition" :enter-active-class="transition.enter" :leave-active-class="transition.leave">
-                <router-view @nextAlarm='nextAlarm()' @openModal='openModal' v-bind:next_alarm_time="next_alarm_time" />
-            </transition>
+    <div>
+        <div :class="['dragbar', {'deep-dark': is_dark},{'deep-light': !is_dark}]"></div>
+        <div class="wrapper">
+            <AlarmModal ref="alarmModal" v-bind:title="title" v-bind:time="time" v-bind:sound_name="sound_name" />
+            <div class="content">
+                <transition name="costom-transition" :enter-active-class="transition.enter" :leave-active-class="transition.leave">
+                    <router-view @nextAlarm='nextAlarm()' @openModal='openModal' v-bind:next_alarm_time="next_alarm_time" />
+                </transition>
+            </div>
+            <Tabbar v-bind:carrentPage="carrentPage" />
         </div>
-        <Tabbar v-bind:carrentPage="carrentPage" />
     </div>
 </template>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.3.2/dist/sql-wasm.js'></script>
@@ -40,8 +41,11 @@
             next_alarm_time() {
                 return this.$store.getters.nextTime;
             },
-            clock_type(){
+            clock_type() {
                 return this.$store.state.clock_type;
+            },
+            is_dark:function(){
+                return this.$store.state.is_dark;
             }
         },
         methods: {
@@ -51,8 +55,8 @@
                     db.find({
                         type: "config"
                     }, function(err, docs) {
-                        docs.forEach((doc) =>{
-                            switch(doc.key){
+                        docs.forEach((doc) => {
+                            switch (doc.key) {
                                 case 'clock_type':
                                     this.$store.state.clock_type = doc.value;
                                     break;
@@ -67,7 +71,7 @@
             nextAlarm: function() {
                 var dateNow = new Date();
                 var day = dateNow.getDay();
-                var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2))+1;
+                var calcNum = Number(day + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2)) + 1;
                 db.loadDatabase((error) => {
                     if (error !== null) console.error(error);
                     db.find({
@@ -116,7 +120,7 @@
                     }.bind(this));
                 });
             },
-            openAlarm:function(){
+            openAlarm: function() {
                 var days = this.$store.state.days;
                 var id = this.$store.state.nextAlarmId;
                 var alarmTime = this.$store.state.nextAlarmTime;
@@ -131,23 +135,23 @@
                         db.findOne({
                             _id: doc.sound_id
                         }, function(err, doc) {
-                            if(doc){
+                            if (doc) {
                                 Vm2.sound_path = doc.path;
                                 Vm2.sound_name = doc.name;
-                                Vm2.$refs.alarmModal.open(doc.path,true);
-                            }else{
+                                Vm2.$refs.alarmModal.open(doc.path, true);
+                            } else {
                                 Vm2.sound_path = '';
                                 Vm2.sound_name = '';
-                                Vm2.$refs.alarmModal.open(null,true);
+                                Vm2.$refs.alarmModal.open(null, true);
                             }
                         }.bind(Vm2));
                     }.bind(this));
                 });
                 this.nextAlarm();
             },
-            openModal(...args){
-                this.$refs.alarmModal.open(args[0],false);
-                
+            openModal(...args) {
+                this.$refs.alarmModal.open(args[0], false);
+
             }
         },
         watch: {
@@ -166,14 +170,14 @@
                 var alarmTime = this.$store.state.nextAlarmTime;
                 var dateNow = new Date();
                 var dayOfWeekStr = this.$store.state.days[dateNow.getDay()];
-                var hours   = ("0" + dateNow.getHours()).slice(-2);
+                var hours = ("0" + dateNow.getHours()).slice(-2);
                 var minutes = ("0" + dateNow.getMinutes()).slice(-2);
                 var seconds = ("0" + dateNow.getSeconds()).slice(-2);
                 var currentTime = String(dateNow.getDay()) + hours + minutes + seconds;
                 if (alarmTime != null && currentTime != null) {
                     var alarmSeconds = to_minutes(alarmTime) * 60;
                     var currentSeconds = (to_minutes(currentTime) * 60) + Number(currentTime.substr(5, 2));
-                    var sevenDaysSeconds = 604800;//１週間の秒数
+                    var sevenDaysSeconds = 604800; //１週間の秒数
 
                     function to_minutes(time) {
                         var result = (Number(time.substr(0, 1)) * 24 * 60) +
@@ -197,9 +201,12 @@
             this.db_load_config();
         },
     };
-
 </script>
 <style lang="scss">
+    body {
+        overflow: hidden;
+    }
+
     body * {
         font-family: "Helvetica Neue",
             Arial,
@@ -208,26 +215,36 @@
             Meiryo,
             sans-serif;
     }
-    
+
     a:link {
         color: white;
         text-decoration: none;
     }
-    
-    .wrapper { //背景
+
+    .dragbar {
+        height: 20px;
+        width: 100%;
+        -webkit-app-region: drag;
+        -webkit-user-select: none;
+        border-bottom-right-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+
+    .wrapper {
+        //背景
         display: flex;
         flex-direction: column;
         font-weight: bolder;
-        background: linear-gradient(-135deg, #E4A972, #9941D8),
-        linear-gradient(75deg, #E4A972, #9941D8 ,#79ffff)fixed;
-        border-radius: 15px;
-        padding:0px 10px;
-      //  -webkit-app-region: drag;
-    }
+        background: linear-gradient(-135deg, rgba(228, 169, 114, 0.8), rgba(153, 65, 216, 0.8)),
+            linear-gradient(75deg, rgba(228, 169, 114, 0.8), rgba(153, 65, 216, 0.8), rgba(121, 255, 255, 0.8))fixed;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        padding: 0px 10px;
 
-    .content {
-        height: 500px;
-        max-height: 500px;
+        .content {
+            height: 500px;
+            max-height: 500px;
+        }
     }
 
     .animate__animated {
@@ -237,33 +254,56 @@
     .animate__fadeIn {
         --animate-duration: 1000ms;
     }
+
     .dark {
-        color:white;
-        fill:white;
-        background: rgba( 62, 62, 62, 0.50 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 5.0px );
-        -webkit-backdrop-filter: blur( 5.0px );
+        color: white;
+        fill: white;
+        background: rgba(62, 62, 62, 0.50);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(5.0px);
+        -webkit-backdrop-filter: blur(5.0px);
         border-radius: 10px;
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
+        border: 1px solid rgba(255, 255, 255, 0.18);
     }
-    .dark-color{
-        color:white;
-        fill:white;
-    }
-    .light {
-        color:#383838;
-        fill:#383838;
-        background: rgba( 255, 255, 255, 0.25 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 4px );
-        -webkit-backdrop-filter: blur( 4px );
+    .deep-dark {
+        color: white;
+        fill: white;
+        background: rgba(62, 62, 62, 0.8);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(5.0px);
+        -webkit-backdrop-filter: blur(5.0px);
         border-radius: 10px;
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
-    }
-    .light-color{
-        color:#383838;
-        fill:#383838;
+        border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
+    .dark-color {
+        color: white;
+        fill: white;
+    }
+
+    .light {
+        color: #383838;
+        fill: #383838;
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .deep-light{
+        color: #383838;
+        fill: #383838;
+        background: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    
+    .light-color {
+        color: #383838;
+        fill: #383838;
+    }
 </style>

@@ -1,11 +1,11 @@
 <template>
     <div class="home-wrapper">
         <div class="alarm-add-button" @click="addAlarmModal">
-            <addButton :is_dark="is_dark"/>
+            <addButton :is_dark="is_dark" />
         </div>
-        <EditAlarm ref="EditAlarm" @run="getData" :state="this.modal_type"/>
+        <EditAlarm ref="EditAlarm" @run="getData" :state="this.modal_type" />
         <div class="clock-wrapper">
-            <clock :clock_type="clock_type" :is_dark="is_dark"/>
+            <clock :clock_type="clock_type" :is_dark="is_dark" />
         </div>
         <div :class="['aleam-lists', {'dark': is_dark},{'light': !is_dark}]">
             <div v-for="(alarm, key) in alarm_data" :key="key" class="aleam">
@@ -50,8 +50,8 @@
         data() {
             return {
                 alarm_data: [],
-                add_alarm:false,
-                modal_type:null,
+                add_alarm: false,
+                modal_type: null,
             }
         },
         computed: {
@@ -60,10 +60,10 @@
                 if (count == 0) return true
                 else return false
             },
-            clock_type:function(){
+            clock_type: function() {
                 return this.$store.state.clock_type;
             },
-            is_dark:function(){
+            is_dark: function() {
                 return this.$store.state.is_dark;
             }
         },
@@ -121,12 +121,12 @@
                     }.bind(this));
                 });
             },
-            addAlarmModal(){
+            addAlarmModal() {
                 this.modal_type = 'add';
                 this.$refs.EditAlarm.initialize();
                 this.$refs.EditAlarm.displayControl(true);
             },
-            alarmDetailModal(id){
+            alarmDetailModal(id) {
                 this.modal_type = 'edit';
                 this.$refs.EditAlarm.setId(id);
                 this.$refs.EditAlarm.getAlarmData(id);
@@ -141,14 +141,13 @@
 </script>
 
 <style lang="scss">
-    
-    .alarm-add-button{
+    .alarm-add-button {
         position: absolute;
-        top:15px;
-        left:15px;
+        top: 40px;
+        left: 15px;
     }
-    
-    .clock-wrapper{
+
+    .clock-wrapper {
         display: flex;
         justify-content: center;
         padding: 20px 0px;
@@ -168,31 +167,35 @@
     /*スクロールバーの色・角丸指定*/
     .aleam-lists::-webkit-scrollbar-thumb {
         border-radius: 10px;
-        background: rgba( 62, 62, 62, 0.50 );
+        background: rgba(62, 62, 62, 0.50);
     }
 
     .home-wrapper {
         display: flex;
         flex-direction: column;
+
         .aleam-lists {
             display: flex;
             flex-direction: column;
             overflow-y: scroll;
-            height:150px;
+            height: 150px;
 
             .aleam {
                 display: flex;
                 flex-direction: row;
                 height: 50px;
-                border-bottom: 1px solid rgba( 255, 255, 255, 0.18 );
+                border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+
                 .alarm-router {
                     display: flex;
                     flex-grow: 6;
+
                     .aleam-time {
                         flex-grow: 3;
                         padding-left: 30px;
                         line-height: 50px;
                     }
+
                     .aleam-sound {
                         flex-grow: 3;
                         line-height: 50px;
@@ -200,6 +203,7 @@
                         font-weight: 900;
                     }
                 }
+
                 .aleam-istrue-button {
                     line-height: 50px;
                 }
@@ -232,7 +236,7 @@
         height: 30px;
         margin-top: 10px;
         box-sizing: border-box;
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
+        border: 1px solid rgba(255, 255, 255, 0.18);
         float: left;
         border-radius: 100px;
         position: relative;
@@ -241,15 +245,15 @@
     }
 
     input[type=checkbox]:checked+label {
-        background: rgba( 0, 149, 70, 0.60 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 4px );
-        -webkit-backdrop-filter: blur( 4px );
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
+        background: rgba(0, 149, 70, 0.60);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     input[type=checkbox]:checked+label:before {
-        top:4px;
+        top: 4px;
         left: 23px;
     }
 
@@ -263,11 +267,11 @@
         top: 4px;
         box-sizing: border-box;
         border-radius: 100px;
-        background: rgba( 255, 255, 255, 0.80 );
-        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-        backdrop-filter: blur( 4px );
-        -webkit-backdrop-filter: blur( 4px );
-        border: 1px solid rgba( 255, 255, 255, 0.18 );
+        background: rgba(255, 255, 255, 0.80);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     .initial-text-area {
