@@ -77,40 +77,28 @@
                 canvasContext.transform(1, 0, 0, -1, 0, 150);
                 var textfile;
                 let arrayBuffer
-                //function LoadSample(actx, url) {
-                //    return new Promise((resolv) => {
-                //        fetch(url).then((response) => {
-                //            return response.arrayBuffer();
-                //        }).then((arraybuf) => {
-                //            return actx.decodeAudioData(arraybuf);
-                //        }).then((buf) => {
-                //            resolv(buf);
-                //        })
-                //    });
-                //}
+
                 if (path) {
                     textfile = fs.readFileSync(path, (err) => {
                         if (err) throw err;
                     });
                     arrayBuffer = toArrayBuffer(textfile);
+                    setMusicBasicInfo(textfile);
                 } else {
                     textfile = default_sounds;
                     arrayBuffer = base64ToArrayBuffer(textfile);
                 }
-                var blob = new Blob([textfile]);
-
-                mm.parseBlob(blob).then(metadata => {
-                    if (metadata.common.picture) {
-                        var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
-                        this.src = "background-image:url(data:;base64," + j + ")";
-                        this.sound_title = metadata.common.title;
-                        this.sound_artist = metadata.common.artist;
-                    } else {
-                        //デフォルトアートの設定
-                        this.src = 'background-image: url("../../public/img/default1.png")';
-                    }
-                });
-
+                function setMusicBasicInfo(data){
+                    var blob = new Blob([data]);
+                    mm.parseBlob(blob).then(metadata => {
+                        if (metadata.common.picture) {
+                            var j = btoa(String.fromCharCode(...metadata.common.picture[0].data));
+                            this.src = "background-image:url(data:;base64," + j + ")";
+                            this.sound_title = metadata.common.title;
+                            this.sound_artist = metadata.common.artist;
+                        }
+                    });
+                }
                 function toArrayBuffer(buf) {
                     let result;
                     try {

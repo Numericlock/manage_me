@@ -163,13 +163,21 @@
                         var currentTime = String(dateNow.getDay()) + ("0" + dateNow.getHours()).slice(-2) + ("0" + dateNow.getMinutes()).slice(-2);
                         for (var i = 0; i < this.value.length; i++) {
                             var time = Number(days.indexOf(this.value[i]) + this.time.HH + this.time.mm);
-                            if (currentTime < time && time < nextAlarm) {
-                                nextAlarm = time;
-                            } else if (nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time) {
+                            if(nextAlarm != null){
+                                if (currentTime < time && time < nextAlarm) {
+                                    nextAlarm = time;
+                                } else if (nextAlarm < currentTime && currentTime < time && time <= 62359 || nextAlarm < currentTime && time < nextAlarm && 0 <= time) {
+                                    nextAlarm = time;
+                                }else{
+                                     nextAlarm = time;
+                                }
+                            }else{
                                 nextAlarm = time;
                             }
                         }
+                        console.log(nextAlarm);
                         var strNextAlarm = this.zeroPadding(nextAlarm, 5);
+                        console.log(strNextAlarm);
                         this.$store.dispatch('next_alarm_refresh', {
                             time: strNextAlarm,
                             id: newDoc._id
